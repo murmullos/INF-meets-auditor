@@ -1,0 +1,726 @@
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Auditor de transcripciones</title>
+  <style>
+    /* ===== Tema claro, amable y de baja fatiga visual ===== */
+    :root {
+      --bg:#f7fafc;          /* gris muy claro */
+      --panel:#ffffff;       /* tarjetas blancas */
+      --muted:#64748b;       /* slate-500 */
+      --text:#24324a;        /* azul grisáceo oscuro, buen contraste */
+      --accent:#2563eb;      /* azul accesible */
+      --accent-2:#16a34a;    /* verde accesible */
+      --danger:#dc2626;      /* rojo */
+      --chip:#eef2ff;        /* índigo muy claro */
+      --chipText:#1e293b;    /* slate-800 */
+      --chipBorder:#c7d2fe;  /* borde chip */
+      --border:#e5e7eb;      /* gris borde claro */
+      --shadow: 0 1px 3px rgba(2,8,23,.06), 0 1px 2px rgba(2,8,23,.04);
+      --shadow-lg: 0 10px 15px rgba(2,8,23,.06), 0 4px 6px rgba(2,8,23,.05);
+      --radius:14px;
+    }
+    html, body {height:100%;}
+    body {margin:0; background: var(--bg); color: var(--text); font: 15px/1.55 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji';}
+    header {display:flex; gap:12px; align-items:center; padding:14px 16px; border-bottom:1px solid var(--border); position:sticky; top:0; background:rgba(255,255,255,.9); backdrop-filter: blur(6px); z-index:20}
+    header h1 {font-size:18px; margin:0; letter-spacing:.2px}
+    header .right {margin-left:auto; display:flex; gap:8px; align-items:center}
+
+    /* Tabs */
+    .tabs {display:flex; gap:6px; background:#fff; border-bottom:1px solid var(--border); position:sticky; top:56px; z-index:19}
+    .tab-btn {appearance:none; border:1px solid var(--border); background:#fff; padding:10px 12px; border-radius:10px 10px 0 0; cursor:pointer; box-shadow: var(--shadow); margin-left:8px; margin-top:8px}
+    .tab-btn[aria-selected="true"] {background:var(--chip); border-color:var(--chipBorder)}
+
+    .container {display:grid; grid-template-columns: 340px 1fr; gap:16px; padding:16px;}
+    .panel {background: var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:14px; box-shadow: var(--shadow)}
+    .panel h2 {margin:0 0 8px; font-size:15px; opacity:.95}
+    .controls {display:flex; gap:12px; flex-direction: column;}
+    .controls label {font-size:13px; color:var(--muted)}
+    input[type="text"], textarea, select {width:100%; background:#fff; color: var(--text); border:1px solid var(--border); border-radius:12px; padding:10px 12px; resize:vertical; box-shadow: inset 0 1px 0 rgba(2,8,23,.03)}
+    textarea {min-height:88px}
+    button, .btn {background:#fff; color: var(--text); border:1px solid var(--border); border-radius:12px; padding:10px 12px; cursor:pointer; box-shadow: var(--shadow)}
+    button:hover, .btn:hover {border-color:#cbd5e1; box-shadow: var(--shadow-lg)}
+    .btn-success {background: var(--accent-2); color:#ffffff; border-color:#15803d}
+    .btn-danger {background: var(--danger); color:#ffffff; border-color:#b91c1c}
+    .error-chip {display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid var(--chipBorder); background:var(--chip); color:var(--chipText); border-radius:999px; font-size:13px; cursor:pointer; user-select:none}
+    .error-chip[data-active="true"] {outline:2px solid rgba(37,99,235,.25)}
+    .error-chip b {min-width:1.6em; text-align:center}
+    .error-group {display:flex; flex-wrap:wrap; gap:8px}
+    .list {display:flex; flex-direction:column; gap:10px}
+
+    /* Transcripción blocks */
+    .block {background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:12px; display:flex; flex-direction:column; gap:10px}
+    .meta {display:flex; gap:8px; align-items:center; flex-wrap:wrap; font-size:13px; color:var(--muted)}
+    .meta .tag {background:#f1f5f9; padding:4px 9px; border-radius:999px; border:1px solid var(--border)}
+    .block .text {white-space:pre-wrap; font-size:15px}
+
+    /* Síntesis blocks (distinta forma) */
+    .sblock {background:#fff; border:1px solid var(--border); border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:6px}
+    .s-title {font-weight:600; font-size:16px}
+    .s-text {white-space:pre-wrap; font-size:15px}
+
+    .kpis {display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:10px}
+    .kpi {background:#fff; border:1px solid var(--border); border-radius:12px; padding:12px}
+    .kpi h3 {margin:0; font-size:12px; color:var(--muted)}
+    .kpi .num {font-size:22px; font-weight:700}
+    .summary {display:flex; flex-direction:column; gap:8px}
+    .summary table {width:100%; border-collapse: collapse; font-size:14px}
+    .summary th, .summary td {text-align:left; padding:8px; border-bottom:1px solid var(--border)}
+    .summary tbody tr:hover {background:#f8fafc}
+    .pill {padding:4px 8px; border-radius:999px; background:#f8fafc; border:1px solid var(--border)}
+    .muted {color:var(--muted)}
+    .row {display:flex; gap:8px; align-items:center}
+    .spacer {flex:1}
+    .hidden {display:none !important}
+    .small {font-size:12px}
+    details > summary {cursor:pointer; color:var(--muted)}
+    .note {background:#f8fafc; border-radius:10px; border:1px dashed var(--border); padding:8px; overflow-x:auto;}
+    /* sección de tipos colapsada y menos visible */
+    .quiet-box {background:#f8fafc; border:1px dashed var(--border); padding:10px; border-radius:10px}
+
+    /* Footer fijo colapsable */
+    .footer-fixed {position:fixed; left:0; right:0; bottom:0; background:#ffffff; border-top:1px solid var(--border); box-shadow: 0 -6px 12px rgba(2,8,23,.05); z-index:30}
+    .footer-bar {display:flex; align-items:center; gap:10px; padding:10px 16px;}
+    .footer-bar .badge {background:#eef2ff; border:1px solid #c7d2fe; border-radius:999px; padding:4px 10px; font-size:13px}
+    .footer-panel {display:none; padding:12px 16px; border-top:1px solid var(--border)}
+    .footer-fixed.open .footer-panel {display:block}
+
+    /* Ocultar botón de exportar anotaciones */
+    #save{display:none !important}
+
+    /* Scroll vertical para los bloques, menú y leyenda siempre visibles */
+    .main-content-scroll {
+      max-height: 100vh;
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+
+    /* Leyenda de errores */
+    .legend-toggle {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      font-weight: 500;
+      color: #007bff;
+      margin-top: 1.5em;
+      margin-bottom: 0.2em;
+    }
+    .legend-chevron {
+      display: inline-block;
+      transition: transform 0.2s;
+      margin-right: 7px;
+      font-size: 1.2em;
+    }
+    .legend-chevron.open {
+      transform: rotate(90deg);
+    }
+    #sidebar-legend-content {
+      display: none;
+      margin-bottom: 1.2em;
+      background: #f7fafc;
+      border: 1px solid #e1e6ed;
+      border-radius: 7px;
+      padding: 12px 16px 10px 16px;
+    }
+    #sidebar-legend-content.open {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📝 Auditor</h1>
+    <div class="right">
+      <label class="btn">
+        <input id="file" type="file" accept="application/json" hidden />
+        Cargar JSON del tab activo
+      </label>
+      <button id="save" class="btn">Exportar anotaciones (JSON)</button>
+      <button id="exportCsv" class="btn btn-success">Exportar Excel (CSV)</button>
+      <button id="reset" class="btn btn-danger">Borrar estado</button>
+    </div>
+  </header>
+
+  <!-- Tabs selector -->
+  <div class="tabs">
+    <button id="tabTrans" class="tab-btn" aria-selected="true">Transcripción</button>
+    <button id="tabSynth" class="tab-btn" aria-selected="false">Síntesis</button>
+  </div>
+
+  <!-- Sidebar leyenda de errores por tab -->
+  <div id="sidebar-legend">
+    <div class="legend-toggle" id="legend-toggle-btn">
+      <span class="legend-chevron" id="legend-chevron">▶</span>
+      Leyenda de errores
+    </div>
+    <div id="sidebar-legend-content"></div>
+  </div>
+
+  <!-- ====== TAB: TRANSCRIPCIÓN ====== -->
+  <div id="tabTransWrap">
+    <div class="container">
+      <section class="panel">
+        <h2>Configuración y filtros (Transcripción)</h2>
+        <div class="controls">
+          <div>
+            <label>Buscar (texto/hablante):</label>
+            <input id="qT" type="text" placeholder="Escribe para filtrar… (Enter limpia)" />
+          </div>
+          <details>
+            <summary>Tipos de error visibles (colapsado)</summary>
+            <div class="quiet-box">
+              <div id="errorsTogglesT" class="error-group"></div>
+              <p class="small muted">Clic en un tipo para activarlo o desactivarlo.</p>
+            </div>
+          </details>
+          <div class="kpis">
+            <div class="kpi"><h3>Bloques</h3><div id="kpiBlocksT" class="num">0</div></div>
+            <div class="kpi"><h3>Bloques con error</h3><div id="kpiBlocksErrT" class="num">0</div></div>
+            <div class="kpi"><h3>Errores totales</h3><div id="kpiErrT" class="num">0</div></div>
+            <div class="kpi"><h3>Tipos activos</h3><div id="kpiTypesT" class="num">0</div></div>
+            <div class="kpi"><h3>Palabras totales</h3><div id="kpiWordsT" class="num">0</div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Bloques de transcripción</h2>
+        <div class="row small muted" style="margin-bottom:8px">
+          <span>Atajos: clic en chips suma / Alt+clic resta</span>
+          <span class="spacer"></span>
+        </div>
+        <div id="mainBlocksT" class="main-content-scroll">
+          <ol id="listT" class="list"></ol>
+        </div>
+
+        <h2>Resumen</h2>
+        <div id="summaryT" class="summary"></div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ====== TAB: SÍNTESIS ====== -->
+  <div id="tabSynthWrap" class="hidden">
+    <div class="container">
+      <section class="panel">
+        <h2>Configuración y filtros (Síntesis)</h2>
+        <div class="controls">
+          <div>
+            <label>Buscar (título/texto):</label>
+            <input id="qS" type="text" placeholder="Escribe para filtrar… (Enter limpia)" />
+          </div>
+          <details>
+            <summary>Tipos de error visibles (colapsado)</summary>
+            <div class="quiet-box">
+              <div id="errorsTogglesS" class="error-group"></div>
+              <p class="small muted">Clic en un tipo para activarlo o desactivarlo.</p>
+            </div>
+          </details>
+          <div class="kpis">
+            <div class="kpi"><h3>Bloques</h3><div id="kpiBlocksS" class="num">0</div></div>
+            <div class="kpi"><h3>Bloques con error</h3><div id="kpiBlocksErrS" class="num">0</div></div>
+            <div class="kpi"><h3>Errores totales</h3><div id="kpiErrS" class="num">0</div></div>
+            <div class="kpi"><h3>Tipos activos</h3><div id="kpiTypesS" class="num">0</div></div>
+            <div class="kpi"><h3>Palabras totales</h3><div id="kpiWordsS" class="num">0</div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Bloques de síntesis</h2>
+        <div class="row small muted" style="margin-bottom:8px">
+          <span>Atajos: clic en chips suma / Alt+clic resta</span>
+          <span class="spacer"></span>
+        </div>
+        <div id="mainBlocksS" class="main-content-scroll">
+          <ol id="listS" class="list"></ol>
+        </div>
+        <div style="margin: 1.5em 0 0.5em 0;">
+          <label for="global-synth-textarea" style="font-weight:600;">Síntesis global del auditor:</label>
+          <textarea id="global-synth-textarea" rows="3" style="width:100%;margin-top:0.5em;resize:vertical;"></textarea>
+        </div>
+        <h2>Resumen</h2>
+        <div id="summaryS" class="summary"></div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Footer fijo colapsable de totales (combinado) -->
+  <div id="footerTotals" class="footer-fixed">
+    <div class="footer-bar">
+      <button id="toggleFooter" class="btn">Totales</button>
+      <div class="badge" id="badgeTotals">Errores: 0</div>
+      <div class="badge" id="badgeBlocks">Bloques con error: 0</div>
+      <div class="badge" id="badgeWords">Palabras totales: 0</div>
+      <div class="spacer"></div>
+      <span class="small muted">Clic en "Totales" para desplegar</span>
+    </div>
+    <div class="footer-panel" id="footerPanel"><!-- se rellena dinámicamente --></div>
+  </div>
+
+  <!-- Mostrar conteo de palabras -->
+  <div id="word-count-info" style="margin: 1em 0; font-weight: bold; color: #2d3a4b;"></div>
+
+  <script>
+  // ===== Catálogos de errores =====
+  const ERROR_CATALOG_T = [
+    { key:'orador',   label:'Err. orador',      desc:'Hablante asignado ≠ real' },
+    { key:'cambio',     label:'Err. cambio habl.',  desc:'Se omitió cambio de hablante' },
+    { key:'termino',    label:'Err. término',       desc:'Palabra mal transcrita' },
+    { key:'precision',  label:'Err. precisión',     desc:'Información mal recogida' },
+    { key:'omision',    label:'Err. omisión',       desc:'Falta info que sí se dijo' },
+    { key:'anadido',    label:'Err. añadido',       desc:'Se añadió contenido no dicho' },
+    { key:'colapso',    label:'Err. colapso',       desc:'Voces simultáneas mal tratadas' },
+    { key:'ortografia', label:'Err. ortografía',    desc:'Ortografía/puntuación pobre' },
+    { key:'estilo',     label:'Err. estilo',        desc:'Ruido excesivo / muletillas' },
+    { key:'fragmentacion', label:'Err. fragmentación', desc:'Bloques separados de un mismo orador' }
+  ];
+
+  const ERROR_CATALOG_S = [
+    { key:'coherencia',   label:'Coherencia',     desc:'Ideas conectadas y ordenadas' },
+    { key:'completitud',  label:'Completitud',    desc:'Cubre todos los puntos clave' },
+    { key:'relevancia',   label:'Relevancia',     desc:'Evita ruido y relleno' },
+    { key:'redundancia',  label:'Redundancia',    desc:'Repeticiones innecesarias' },
+    { key:'estructura',   label:'Estructura',     desc:'Titulado y secciones claras' },
+    { key:'segmentacion',   label:'Segmentación',     desc:'Exceso de conceptos en mismo bloque' }
+
+  ];
+
+  // ===== Estados separados y claves de storage =====
+  const LS_T = 'auditor_trans_v1';
+  const LS_S = 'auditor_synth_v1';
+
+  const stateT = { items: [], annotations: {}, enabledErrors: new Set(ERROR_CATALOG_T.map(e=>e.key)), filter:'' };
+  const stateS = { items: [], annotations: {}, enabledErrors: new Set(ERROR_CATALOG_S.map(e=>e.key)), filter:'' };
+
+  let activeTab = 'T'; // 'T' transcripción, 'S' síntesis
+
+  // ===== Utilidades =====
+  const $ = sel => document.querySelector(sel);
+  const el = (tag, attrs={}, ...children) => {
+    const n = document.createElement(tag);
+    Object.entries(attrs).forEach(([k,v])=>{
+      if (k==='dataset') Object.entries(v).forEach(([dk,dv])=> n.dataset[dk]=dv);
+      else if (k.startsWith('on') && typeof v === 'function') n.addEventListener(k.slice(2), v);
+      else if (k==='html') n.innerHTML = v; else n.setAttribute(k, v);
+    });
+    children.flat().forEach(c => n.append(c instanceof Node ? c : document.createTextNode(c)));
+    return n;
+  };
+  const safe = v => (v==null?'':String(v));
+  function csvEscape(v){ const s = String(v ?? ''); if (s.includes(',')||s.includes('\n')||s.includes('"')) return '"'+s.replace(/"/g,'""')+'"'; return s; }
+
+  // ===== Storage =====
+  function loadFromLocal(){
+    try{
+      const rawT = localStorage.getItem(LS_T); if (rawT){ const p=JSON.parse(rawT); Object.assign(stateT, p, {enabledErrors:new Set(p.enabledErrors)}); }
+      const rawS = localStorage.getItem(LS_S); if (rawS){ const p=JSON.parse(rawS); Object.assign(stateS, p, {enabledErrors:new Set(p.enabledErrors)}); }
+    }catch(e){ console.warn(e); }
+  }
+  function saveToLocal(){
+    localStorage.setItem(LS_T, JSON.stringify({...stateT, enabledErrors:[...stateT.enabledErrors]}));
+    localStorage.setItem(LS_S, JSON.stringify({...stateS, enabledErrors:[...stateS.enabledErrors]}));
+  }
+
+  // ===== Funciones comunes por tab =====
+  function getCtx(tab){
+    return tab==='S' ? {
+      state: stateS,
+      catalog: ERROR_CATALOG_S,
+      q: $('#qS'),
+      toggles: $('#errorsTogglesS'),
+      list: $('#listS'),
+      kpiBlocks: $('#kpiBlocksS'),
+      kpiBlocksErr: $('#kpiBlocksErrS'),
+      kpiErr: $('#kpiErrS'),
+      kpiTypes: $('#kpiTypesS'),
+      kpiWords: $('#kpiWordsS'),
+      summary: $('#summaryS')
+    } : {
+      state: stateT,
+      catalog: ERROR_CATALOG_T,
+      q: $('#qT'),
+      toggles: $('#errorsTogglesT'),
+      list: $('#listT'),
+      kpiBlocks: $('#kpiBlocksT'),
+      kpiBlocksErr: $('#kpiBlocksErrT'),
+      kpiErr: $('#kpiErrT'),
+      kpiTypes: $('#kpiTypesT'),
+      kpiWords: $('#kpiWordsT'),
+      summary: $('#summaryT')
+    };
+  }
+
+  // --- Utilidad para offset en segundos desde fecha de reunión ---
+  function getBiteOffsetSeconds(biteDate, meetingDate) {
+    if (!biteDate || !meetingDate) return 0;
+    const diffMs = new Date(biteDate).getTime() - new Date(meetingDate).getTime();
+    return Math.max(0, Math.floor(diffMs / 1000));
+  }
+  function secondsToTimestamp(secs) {
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = secs % 60;
+    return (h > 0 ? String(h).padStart(2, '0') + ':' : '') + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  }
+
+  // --- Obtener fecha de referencia: primer start_date_time ---
+  function getMeetingDate() {
+    // Busca el primer start_date_time válido en items
+    let items = (activeTab === 'T') ? (stateT?.items || []) : (stateS?.items || []);
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].start || items[i].start_date_time) {
+        return items[i].start || items[i].start_date_time;
+      }
+    }
+    return null;
+  }
+
+  function timePill(start, end){
+    const meetingDate = getMeetingDate();
+    let pill = '';
+    if (meetingDate && start) {
+      const startSecs = getBiteOffsetSeconds(start, meetingDate);
+      pill += secondsToTimestamp(startSecs);
+    } else {
+      pill += start ?? '¿?';
+    }
+    if (meetingDate && end) {
+      const endSecs = getBiteOffsetSeconds(end, meetingDate);
+      pill += ' → ' + secondsToTimestamp(endSecs);
+    } else if (end) {
+      pill += ' → ' + end;
+    }
+    return el('span', {class:'tag'}, pill);
+  }
+
+  function blockMatchesFilterT(b,f){ if(!f) return true; const k=f.toLowerCase(); return (b.speaker||'').toLowerCase().includes(k) || (b.text||'').toLowerCase().includes(k); }
+  function blockMatchesFilterS(b,f){ if(!f) return true; const k=f.toLowerCase(); return (b.title||'').toLowerCase().includes(k) || (b.text||'').toLowerCase().includes(k); }
+
+  function countWordsInTranscription(data) {
+    if (!Array.isArray(data)) return 0;
+    return data.reduce((acc, item) => {
+      if (typeof item.text === 'string') {
+        // Cuenta palabras separadas por espacio, ignora múltiples espacios
+        acc += (item.text.trim().match(/\S+/g) || []).length;
+      }
+      return acc;
+    }, 0);
+  }
+
+  function setItems(json){
+    if (activeTab==='S'){
+      stateS.items = json.items || [];
+      stateS.annotations = {}; stateS.items.forEach((_,i)=> stateS.annotations[i]={counts:{}, note:'', open:false});
+    } else {
+      stateT.items = json.items || [];
+      stateT.annotations = {}; stateT.items.forEach((_,i)=> stateT.annotations[i]={counts:{}, note:'', open:false});
+      // Guarda la fecha de reunión
+      if (json.date) {
+        stateT.meetingDate = json.date;
+        window.lastMeetingDate = json.date;
+      }
+      window.lastMeetingJson = json;
+    }
+    renderAll();
+    saveToLocal();
+  }
+
+  function toggleErrorType(tab,key){ const st = tab==='S'?stateS:stateT; if (st.enabledErrors.has(key)) st.enabledErrors.delete(key); else st.enabledErrors.add(key); render(tab); saveToLocal(); }
+  function incrementError(tab,index,key,delta){ const st = tab==='S'?stateS:stateT; const ann = st.annotations[index] ||= {counts:{}, note:'', open:false}; ann.counts[key]=(ann.counts[key]||0)+delta; if (ann.counts[key]<0) ann.counts[key]=0; render(tab); renderFooterTotals(); saveToLocal(); }
+  function toggleNote(tab,index){ const st = tab==='S'?stateS:stateT; const ann = st.annotations[index] ||= {counts:{}, note:'', open:false}; ann.open=!ann.open; render(tab); saveToLocal(); }
+  function setNote(tab,index,text){ const st = tab==='S'?stateS:stateT; const ann = st.annotations[index] ||= {counts:{}, note:'', open:false}; ann.note=text; saveToLocal(); }
+
+  function totalsByType(tab){ const st=tab==='S'?stateS:stateT; const cat=tab==='S'?ERROR_CATALOG_S:ERROR_CATALOG_T; const totals={}; cat.forEach(e=> totals[e.key]=0); st.items.forEach((_,i)=>{ const c=st.annotations[i]?.counts||{}; Object.entries(c).forEach(([k,v])=> totals[k]=(totals[k]||0)+(v||0)); }); return totals; }
+
+  // ===== Render =====
+  function render(tab=activeTab){
+    const ctx = getCtx(tab);
+    // toggles
+    ctx.toggles.innerHTML='';
+    ctx.catalog.forEach(err=>{
+      const active = (tab==='S'?stateS:stateT).enabledErrors.has(err.key);
+      const chip = el('span',{class:'error-chip', title:err.desc, dataset:{active}}, el('b',{}, active?'✓':'•'),' ',err.label);
+      chip.addEventListener('click', ()=> toggleErrorType(tab, err.key));
+      ctx.toggles.append(chip);
+    });
+    ctx.kpiTypes.textContent = (tab==='S'?stateS:stateT).enabledErrors.size;
+
+    // lista
+    ctx.list.innerHTML='';
+    if (tab==='S'){
+      stateS.items.forEach((b,i)=>{
+        if (!blockMatchesFilterS(b, stateS.filter)) return;
+        const ann = stateS.annotations[i]||{counts:{},note:'',open:false};
+        const chips = el('div',{class:'error-group'});
+        ERROR_CATALOG_S.forEach(err=>{
+          if (!stateS.enabledErrors.has(err.key)) return;
+          const count = ann.counts[err.key]||0;
+          const chip = el('span',{class:'error-chip',title:err.desc});
+          chip.append(el('b',{}, String(count)),' ',err.label);
+          chip.addEventListener('click', (e)=>{ const alt=e.altKey||e.metaKey; incrementError('S',i,err.key, alt?-1:+1); });
+          chips.append(chip);
+        });
+        const noteArea = el('textarea',{class: ann.open?'':'hidden', placeholder:'Añade una nota para este bloque…'});
+        noteArea.value = ann.note||''; noteArea.addEventListener('input', ()=> setNote('S',i,noteArea.value));
+        const block = el('li',{class:'sblock'},
+          el('div',{class:'s-title'}, safe(b.title)||'Sin título'),
+          el('div',{class:'s-text'}, safe(b.text)||''),
+          el('div',{class:'row'}, chips, el('span',{class:'spacer'}), el('button',{class:'btn small', onclick:()=>toggleNote('S',i)}, ann.open?'Ocultar nota':'Añadir nota')),
+          noteArea
+        );
+        ctx.list.append(block);
+      });
+      // KPIs
+      let totalErr=0, blocksErr=0; stateS.items.forEach((_,i)=>{ const c=stateS.annotations[i]?.counts||{}; const s=Object.values(c).reduce((a,b)=>a+(b||0),0); if(s>0) blocksErr++; totalErr+=s;});
+      ctx.kpiBlocks.textContent = stateS.items.length; ctx.kpiBlocksErr.textContent=blocksErr; ctx.kpiErr.textContent=totalErr;
+      ctx.kpiWords.textContent = countWordsInTranscription(stateS.items);
+      // resumen
+      ctx.summary.innerHTML='';
+      const tHead = el('div',{class:'row', style:'margin:8px 0'}, el('span',{class:'muted small'},'Totales por tipo de error (Síntesis)'));
+      ctx.summary.append(tHead);
+      const tbl = el('table'); tbl.append(el('thead',{}, el('tr',{}, el('th',{},'Tipo'), el('th',{},'Total'))));
+      const tb = el('tbody'); ERROR_CATALOG_S.forEach(err=>{ const tot = stateS.items.reduce((acc,_,i)=> acc + (stateS.annotations[i]?.counts?.[err.key]||0),0); tb.append(el('tr',{}, el('td',{},err.label), el('td',{}, String(tot)))); });
+      tbl.append(tb); ctx.summary.append(tbl);
+    } else {
+      stateT.items.forEach((b,i)=>{
+        if (!blockMatchesFilterT(b, stateT.filter)) return;
+        const ann = stateT.annotations[i]||{counts:{},note:'',open:false};
+        const chips = el('div',{class:'error-group'});
+        ERROR_CATALOG_T.forEach(err=>{
+          if (!stateT.enabledErrors.has(err.key)) return;
+          const count = ann.counts[err.key]||0;
+          const chip = el('span',{class:'error-chip',title:err.desc});
+          chip.append(el('b',{}, String(count)),' ',err.label);
+          chip.addEventListener('click', (e)=>{ const alt=e.altKey||e.metaKey; incrementError('T',i,err.key, alt?-1:+1); });
+          chips.append(chip);
+        });
+        const noteArea = el('textarea',{class: ann.open?'':'hidden', placeholder:'Añade una nota para este bloque…'});
+        noteArea.value = ann.note||''; noteArea.addEventListener('input', ()=> setNote('T',i,noteArea.value));
+        const header = el('div',{class:'meta'}, el('span',{class:'tag'}, b.speaker||'¿Hablante?'), timePill(b.start,b.end));
+        const block = el('li',{class:'block'}, header, el('div',{class:'text'}, b.text||''), el('div',{class:'row'}, chips, el('span',{class:'spacer'}), el('button',{class:'btn small', onclick:()=>toggleNote('T',i)}, ann.open?'Ocultar nota':'Añadir nota')), noteArea);
+        ctx.list.append(block);
+      });
+      // KPIs
+      let totalErr=0, blocksErr=0; stateT.items.forEach((_,i)=>{ const c=stateT.annotations[i]?.counts||{}; const s=Object.values(c).reduce((a,b)=>a+(b||0),0); if(s>0) blocksErr++; totalErr+=s;});
+      ctx.kpiBlocks.textContent = stateT.items.length; ctx.kpiBlocksErr.textContent=blocksErr; ctx.kpiErr.textContent=totalErr;
+      ctx.kpiWords.textContent = countWordsInTranscription(stateT.items);
+      // resumen
+      ctx.summary.innerHTML='';
+      const tHead = el('div',{class:'row', style:'margin:8px 0'}, el('span',{class:'muted small'},'Totales por tipo de error (Transcripción)'));
+      ctx.summary.append(tHead);
+      const tbl = el('table'); tbl.append(el('thead',{}, el('tr',{}, el('th',{},'Tipo'), el('th',{},'Total'))));
+      const tb = el('tbody'); ERROR_CATALOG_T.forEach(err=>{ const tot = stateT.items.reduce((acc,_,i)=> acc + (stateT.annotations[i]?.counts?.[err.key]||0),0); tb.append(el('tr',{}, el('td',{},err.label), el('td',{}, String(tot)))); });
+      tbl.append(tb); ctx.summary.append(tbl);
+    }
+  }
+
+  function renderAll(){ render('T'); render('S'); renderFooterTotals(); }
+
+  // ===== Footer (combinado) =====
+  function totalsCombined(){
+    const tTot = Object.values(totalsByType('T')).reduce((a,b)=>a+b,0);
+    const sTot = Object.values(totalsByType('S')).reduce((a,b)=>a+b,0);
+    const tBlocks = stateT.items.reduce((acc,_,i)=> acc + ((Object.values(stateT.annotations[i]?.counts||{}).reduce((x,y)=>x+(y||0),0)>0?1:0)), 0);
+    const sBlocks = stateS.items.reduce((acc,_,i)=> acc + ((Object.values(stateS.annotations[i]?.counts||{}).reduce((x,y)=>x+(y||0),0)>0?1:0)), 0);
+    const tWords = countWordsInTranscription(stateT.items);
+    const sWords = countWordsInTranscription(stateS.items);
+    return { total: tTot+sTot, blocks: tBlocks+sBlocks, tTot, sTot, tBlocks, sBlocks, tWords, sWords };
+  }
+
+  function renderFooterTotals(){
+    const {total, blocks, tTot, sTot, tBlocks, sBlocks, tWords, sWords} = totalsCombined();
+    $('#badgeTotals').textContent = `Errores: ${total}`;
+    $('#badgeBlocks').textContent = `Bloques con error: ${blocks}`;
+    $('#badgeWords').textContent = `Palabras totales: ${tWords+sWords}`;
+
+    const panel = $('#footerPanel'); panel.innerHTML='';
+    panel.append(el('div',{}, el('strong',{},'Totales por tab')));
+    const small = el('table',{style:'margin:6px 0; width:100%'});
+    small.append(el('thead',{}, el('tr',{}, el('th',{},'Tab'), el('th',{},'Errores'), el('th',{},'Bloques con error'), el('th',{},'Palabras'))));
+    small.append(el('tbody',{},
+      el('tr',{}, el('td',{},'Transcripción'), el('td',{}, String(tTot)), el('td',{}, String(tBlocks)), el('td',{}, String(tWords))),
+      el('tr',{}, el('td',{},'Síntesis'),      el('td',{}, String(sTot)), el('td',{}, String(sBlocks)), el('td',{}, String(sWords))),
+      el('tr',{}, el('td',{},'Total'),         el('td',{}, String(total)), el('td',{}, String(blocks)), el('td',{}, String(tWords+sWords)))
+    ));
+    panel.append(small);
+
+    // Detalle por tipo (dos tablas)
+    const tTable = el('table',{style:'width:100%; margin-top:8px'});
+    tTable.append(el('thead',{}, el('tr',{}, el('th',{},'Transcripción - Tipo'), el('th',{},'Total'))));
+    const tTb = el('tbody'); ERROR_CATALOG_T.forEach(err=>{ const tot = stateT.items.reduce((acc,_,i)=> acc + (stateT.annotations[i]?.counts?.[err.key]||0),0); tTb.append(el('tr',{}, el('td',{},err.label), el('td',{}, String(tot)))); });
+    tTable.append(tTb); panel.append(tTable);
+
+    const sTable = el('table',{style:'width:100%; margin-top:8px'});
+    sTable.append(el('thead',{}, el('tr',{}, el('th',{},'Síntesis - Tipo'), el('th',{},'Total'))));
+    const sTb = el('tbody'); ERROR_CATALOG_S.forEach(err=>{ const tot = stateS.items.reduce((acc,_,i)=> acc + (stateS.annotations[i]?.counts?.[err.key]||0),0); sTb.append(el('tr',{}, el('td',{},err.label), el('td',{}, String(tot)))); });
+    sTable.append(sTb); panel.append(sTable);
+  }
+
+  // ===== Export CSV (dos secciones en un mismo archivo) =====
+  function buildCSV_T(){
+    const meetingDate = getMeetingDate();
+    const headers = ['index','speaker','start','end','text','totalErrors', ...ERROR_CATALOG_T.map(e=>`err_${e.key}`), 'palabras', 'porcentajeError', 'note'];
+    const rows = stateT.items.map((b,i)=>{
+      const counts = stateT.annotations[i]?.counts || {}; const total = Object.values(counts).reduce((a,b)=>a+(b||0),0);
+      const words = (b.text || '').trim().split(/\s+/).filter(Boolean).length;
+      const porcentajeError = errorPercentage(total, words);
+      // Calcula start/end relativos
+      let start = b.start || b.start_date_time;
+      let end = b.end || b.end_date_time;
+      if (meetingDate && start) start = secondsToTimestamp(getBiteOffsetSeconds(start, meetingDate));
+      if (meetingDate && end) end = secondsToTimestamp(getBiteOffsetSeconds(end, meetingDate));
+      return [i+1, safe(b.speaker), start, end, safe(b.text).replace(/\n/g,' '), total, ...ERROR_CATALOG_T.map(e=> counts[e.key]||0), words, porcentajeError, safe(stateT.annotations[i]?.note||'').replace(/\n/g,' ')];
+    });
+    const totals = totalsByType('T'); const grand = Object.values(totals).reduce((a,b)=>a+b,0);
+    const totalWords = countWordsInTranscription(stateT.items);
+    const trow = ['TOTAL','','','','',grand, ...ERROR_CATALOG_T.map(e=> totals[e.key]||0), totalWords, errorPercentage(grand, totalWords), ''];
+    return [headers.join(','), ...rows.map(r=> r.map(csvEscape).join(',')), '', trow.map(csvEscape).join(',')].join('\n');
+  }
+
+  function buildCSV_S(){
+    const headers = ['index','title','text','totalErrors', ...ERROR_CATALOG_S.map(e=>`err_${e.key}`), 'palabras', 'porcentajeError', 'note'];
+    const rows = stateS.items.map((b,i)=>{
+      const counts = stateS.annotations[i]?.counts || {}; const total = Object.values(counts).reduce((a,b)=>a+(b||0),0);
+      const words = (b.text || '').trim().split(/\s+/).filter(Boolean).length;
+      const porcentajeError = errorPercentage(total, words);
+      return [i+1, safe(b.title), safe(b.text).replace(/\n/g,' '), total, ...ERROR_CATALOG_S.map(e=> counts[e.key]||0), words, porcentajeError, safe(stateS.annotations[i]?.note||'').replace(/\n/g,' ')];
+    });
+    const totals = totalsByType('S'); const grand = Object.values(totals).reduce((a,b)=>a+b,0);
+    const totalWords = countWordsInTranscription(stateS.items);
+    const trow = ['TOTAL','','',grand, ...ERROR_CATALOG_S.map(e=> totals[e.key]||0), totalWords, errorPercentage(grand, totalWords), '', ''];
+    let csvOut = [headers.join(','), ...rows.map(r=> r.map(csvEscape).join(',')), '', trow.map(csvEscape).join(',')];
+    if (globalSynthText && globalSynthText.trim()) {
+      csvOut.push(''); // línea en blanco
+      csvOut.push(['','Síntesis humana', globalSynthText.replace(/\n/g,' '), '', ...Array(ERROR_CATALOG_S.length+3).fill(''), ''].map(csvEscape).join(','));
+    }
+    return csvOut.join('\n');
+  }
+
+  function exportCSV(){
+    const partT = buildCSV_T();
+    const partS = buildCSV_S();
+    const sep = '\n\n';
+    const csv = [
+      '### SINTESIS',
+      partS,
+      sep,
+      '### Enlace síntesis',
+      sep,
+      '### TRANSCRIPCION',
+      partT,
+      sep,
+    ].join('\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'auditoria_transcripcion_sintesis.csv'; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // ===== Eventos =====
+  $('#file').addEventListener('change', e=>{ const f=e.target.files?.[0]; if(f){ const r=new FileReader(); r.onload=()=>{ try{ const json=JSON.parse(r.result); setItems(json); }catch{ alert('No se pudo parsear el JSON'); } }; r.readAsText(f);} });
+  $('#exportCsv').addEventListener('click', exportCSV);
+  $('#reset').addEventListener('click', ()=>{ if (confirm('¿Borrar todo el estado guardado (transcripción y síntesis)?')){ localStorage.removeItem(LS_T); localStorage.removeItem(LS_S); localStorage.removeItem('auditor_synth_global_v1'); location.reload(); } });
+
+  // filtros
+  $('#qT').addEventListener('input', e=>{ stateT.filter = e.target.value.trim(); render('T'); });
+  $('#qT').addEventListener('keydown', e=>{ if (e.key==='Enter' && e.target.value===''){ stateT.filter=''; e.target.value=''; render('T'); }});
+  $('#qS').addEventListener('input', e=>{ stateS.filter = e.target.value.trim(); render('S'); });
+  $('#qS').addEventListener('keydown', e=>{ if (e.key==='Enter' && e.target.value===''){ stateS.filter=''; e.target.value=''; render('S'); }});
+
+  // tabs
+  $('#tabTrans').addEventListener('click', ()=>{ activeTab='T'; $('#tabTrans').setAttribute('aria-selected','true'); $('#tabSynth').setAttribute('aria-selected','false'); $('#tabTransWrap').classList.remove('hidden'); $('#tabSynthWrap').classList.add('hidden'); renderSidebarLegend('T'); });
+  $('#tabSynth').addEventListener('click', ()=>{ activeTab='S'; $('#tabTrans').setAttribute('aria-selected','false'); $('#tabSynth').setAttribute('aria-selected','true'); $('#tabTransWrap').classList.add('hidden'); $('#tabSynthWrap').classList.remove('hidden'); renderSidebarLegend('S'); });
+
+  // Footer toggle
+  $('#toggleFooter').addEventListener('click', ()=>{ $('#footerTotals').classList.toggle('open'); });
+
+  // Leyenda toggle
+  const legendToggleBtn = document.getElementById('legend-toggle-btn');
+  const legendChevron = document.getElementById('legend-chevron');
+  const legendContent = document.getElementById('sidebar-legend-content');
+  legendToggleBtn.addEventListener('click', function() {
+    legendContent.classList.toggle('open');
+    legendChevron.classList.toggle('open');
+  });
+  // Inicialmente cerrado
+  legendContent.classList.remove('open');
+  legendChevron.classList.remove('open');
+
+  // ===== Inicio =====
+  loadFromLocal();
+  // demo si vacío
+  if (stateT.items.length===0 && stateS.items.length===0){
+    stateT.items = [
+      { speaker:'Ana', start:'00:00:05.000', end:'00:00:14.000', text:'INFO EJEMPLO Bienvenidos a la reunión. Hoy vemos el roadmap del Q4.' },
+      { speaker:'Luis', start:'00:00:14.100', end:'00:00:26.000', text:'INFO EJEMPLO Tenemos tres objetivos: ventas, soporte y lanzamiento de la app.' }
+    ];
+    stateT.annotations = {0:{counts:{},note:'',open:false},1:{counts:{},note:'',open:false}};
+
+    stateS.items = [
+      { title:'Objetivos Q4', text:'INFO EJEMPLO Ventas, soporte y lanzamiento de app.' },
+      { title:'Bloqueadores', text:'INFO EJEMPLO Validación de seguridad pendiente.' }
+    ];
+    stateS.annotations = {0:{counts:{},note:'',open:false},1:{counts:{},note:'',open:false}};
+    saveToLocal();
+  }
+  renderAll();
+
+  function renderSidebarLegend(tab) {
+    const legendDiv = document.getElementById('sidebar-legend-content');
+    let html = '';
+    if (tab === 'T') {
+      html += '<div class="legend-block"><b>Leyenda errores transcripción:</b><ul style="margin:0.5em 0 0 1em;padding:0;">';
+      ERROR_CATALOG_T.forEach(e => {
+        html += `<li><b>${e.label}:</b> <span style='color:#444'>${e.desc}</span></li>`;
+      });
+      html += '</ul></div>';
+    } else if (tab === 'S') {
+      html += '<div class="legend-block"><b>Leyenda errores síntesis:</b><ul style="margin:0.5em 0 0 1em;padding:0;">';
+      ERROR_CATALOG_S.forEach(e => {
+        html += `<li><b>${e.label}:</b> <span style='color:#444'>${e.desc}</span></li>`;
+      });
+      html += '</ul></div>';
+    }
+    legendDiv.innerHTML = html;
+  }
+
+  renderSidebarLegend('T');
+
+  let globalSynthText = '';
+  const synthTextarea = document.getElementById('global-synth-textarea');
+  if (synthTextarea) {
+    synthTextarea.addEventListener('input', function() {
+      globalSynthText = synthTextarea.value;
+      localStorage.setItem('auditor_synth_global_v1', globalSynthText);
+    });
+    // Al cargar, restaurar
+    const storedSynth = localStorage.getItem('auditor_synth_global_v1');
+    if (storedSynth !== null) {
+      globalSynthText = storedSynth;
+      synthTextarea.value = storedSynth;
+    }
+  }
+
+  // Al cambiar de tab, mantener el valor
+  function restoreGlobalSynthText() {
+    if (synthTextarea) synthTextarea.value = globalSynthText;
+  }
+  // Llama a restoreGlobalSynthText() al cambiar a tab S
+  $('#tabSynth').addEventListener('click', restoreGlobalSynthText);
+
+  defaultGlobalSynthText();
+  function defaultGlobalSynthText() {
+    if (synthTextarea && !synthTextarea.value) synthTextarea.value = '';
+  }
+
+  function errorPercentage(totalErrors, totalWords) {
+    if (!totalWords) return '0%';
+    return ((totalErrors / totalWords) * 100).toFixed(2) + '%';
+  }
+  </script>
+</body>
+</html>
