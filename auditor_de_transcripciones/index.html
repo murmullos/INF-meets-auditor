@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Auditor de transcripciones</title>
+</head>
+<body>
+  <header>
+    <h1>📝 Auditor</h1>
+    <div class="right">
+      <label class="btn">
+        <input id="file" type="file" accept="application/json" hidden />
+        Cargar JSON / Backup
+      </label>
+      <button id="save" class="btn">Exportar anotaciones (JSON)</button>
+      <button id="saveBackup" class="btn">Guardar como JSON</button>
+      <button id="exportCsv" class="btn btn-success">Exportar Excel (CSV)</button>
+      <button id="reset" class="btn btn-danger">Borrar estado</button>
+    </div>
+  </header>
+
+  <!-- Tabs selector -->
+  <div class="tabs">
+    <button id="tabTrans" class="tab-btn" aria-selected="true">Transcripción</button>
+    <button id="tabSynth" class="tab-btn" aria-selected="false">Síntesis</button>
+  </div>
+
+  <!-- Sidebar leyenda de errores por tab -->
+  <div id="sidebar-legend">
+    <div class="legend-toggle" id="legend-toggle-btn">
+      <span class="legend-chevron" id="legend-chevron">▶</span>
+      Leyenda de errores
+    </div>
+    <div id="sidebar-legend-content"></div>
+  </div>
+
+  <!-- ====== TAB: TRANSCRIPCIÓN ====== -->
+  <div id="tabTransWrap">
+    <div class="container">
+      <section class="panel">
+        <h2>Configuración y filtros (Transcripción)</h2>
+        <div class="controls">
+          <div>
+            <label>Buscar (texto/hablante):</label>
+            <input id="qT" type="text" placeholder="Escribe para filtrar… (Enter limpia)" />
+          </div>
+          <details>
+            <summary>Tipos de error visibles (colapsado)</summary>
+            <div class="quiet-box">
+              <div id="errorsTogglesT" class="error-group"></div>
+              <p class="small muted">Clic en un tipo para activarlo o desactivarlo.</p>
+            </div>
+          </details>
+          <div class="kpis">
+            <div class="kpi"><h3>Bloques</h3><div id="kpiBlocksT" class="num">0</div></div>
+            <div class="kpi"><h3>Bloques con error</h3><div id="kpiBlocksErrT" class="num">0</div></div>
+            <div class="kpi"><h3>Errores totales</h3><div id="kpiErrT" class="num">0</div></div>
+            <div class="kpi"><h3>Tipos activos</h3><div id="kpiTypesT" class="num">0</div></div>
+            <div class="kpi"><h3>Palabras totales</h3><div id="kpiWordsT" class="num">0</div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Bloques de transcripción</h2>
+        <div class="row small muted" style="margin-bottom:8px">
+          <span>Atajos: clic en chips suma / Alt+clic resta</span>
+          <span class="spacer"></span>
+        </div>
+        <div id="mainBlocksT" class="main-content-scroll">
+          <ol id="listT" class="list"></ol>
+        </div>
+
+        <h2>Resumen</h2>
+        <div id="summaryT" class="summary"></div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ====== TAB: SÍNTESIS ====== -->
+  <div id="tabSynthWrap" class="hidden">
+    <div class="container">
+      <section class="panel">
+        <h2>Configuración y filtros (Síntesis)</h2>
+        <div class="controls">
+          <div>
+            <label>Buscar (título/texto):</label>
+            <input id="qS" type="text" placeholder="Escribe para filtrar… (Enter limpia)" />
+          </div>
+          <details>
+            <summary>Tipos de error visibles (colapsado)</summary>
+            <div class="quiet-box">
+              <div id="errorsTogglesS" class="error-group"></div>
+              <p class="small muted">Clic en un tipo para activarlo o desactivarlo.</p>
+            </div>
+          </details>
+          <div class="kpis">
+            <div class="kpi"><h3>Bloques</h3><div id="kpiBlocksS" class="num">0</div></div>
+            <div class="kpi"><h3>Bloques con error</h3><div id="kpiBlocksErrS" class="num">0</div></div>
+            <div class="kpi"><h3>Errores totales</h3><div id="kpiErrS" class="num">0</div></div>
+            <div class="kpi"><h3>Tipos activos</h3><div id="kpiTypesS" class="num">0</div></div>
+            <div class="kpi"><h3>Palabras totales</h3><div id="kpiWordsS" class="num">0</div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Bloques de síntesis</h2>
+        <div class="row small muted" style="margin-bottom:8px">
+          <span>Atajos: clic en chips suma / Alt+clic resta</span>
+          <span class="spacer"></span>
+        </div>
+        <div id="mainBlocksS" class="main-content-scroll">
+          <ol id="listS" class="list"></ol>
+        </div>
+        <div style="margin: 1.5em 0 0.5em 0;">
+          <label for="global-synth-textarea" style="font-weight:600;">Síntesis global del auditor:</label>
+          <textarea id="global-synth-textarea" rows="3" style="width:100%;margin-top:0.5em;resize:vertical;"></textarea>
+        </div>
+        <h2>Resumen</h2>
+        <div id="summaryS" class="summary"></div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Footer fijo colapsable de totales (combinado) -->
+  <div id="footerTotals" class="footer-fixed">
+    <div class="footer-bar">
+      <button id="toggleFooter" class="btn">Totales</button>
+      <div class="badge" id="badgeTotals">Errores: 0</div>
+      <div class="badge" id="badgeBlocks">Bloques con error: 0</div>
+      <div class="badge" id="badgeWords">Palabras totales: 0</div>
+      <div class="spacer"></div>
+      <span class="small muted">Clic en "Totales" para desplegar</span>
+    </div>
+    <div class="footer-panel" id="footerPanel"></div>
+  </div>
+
+  <!-- Mostrar conteo de palabras -->
+  <div id="word-count-info" style="margin: 1em 0; font-weight: bold; color: #2d3a4b;"></div>
+
+</body>
+</html>
