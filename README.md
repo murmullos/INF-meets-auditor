@@ -41,10 +41,6 @@ El INF Meets Auditor es una aplicación web que permite a los usuarios auditar l
 ### Instalación
 
 ```bash
-# Clonar el repositorio
-git clone <repository-url>
-cd INF-meets-auditor/auditor_de_transcripciones
-
 # Instalar dependencias
 npm install
 
@@ -59,7 +55,7 @@ npm run build
 
 1. **Abrir la aplicación**: `dist/index.html` después de compilar
 2. **Cargar datos**: 
-   - Usar archivos JSON de ejemplo en `mock/`
+   - Usar archivos JSON de ejemplo en `src/mock/`
    - Importar desde DevTools de la app de reuniones (ver tab Ayuda)
 3. **Auditar**: Hacer clic en chips de errores para incrementar contadores
 4. **Exportar**: CSV para análisis o backup JSON para persistencia
@@ -67,25 +63,30 @@ npm run build
 ## 📁 Estructura del Proyecto
 
 ```
-auditor_de_transcripciones/
-├── 📄 index.html          # Template principal
-├── 📁 js/                 # Código JavaScript modular
-│   ├── main.js           # Lógica principal y estado
-│   ├── render.js         # Renderizado de UI
-│   ├── export.js         # Exportación CSV/backup
-│   ├── jsonSource.js     # Carga de JSON desde APIs
-│   ├── storage.js        # Persistencia localStorage
-│   ├── utils.js          # Utilidades comunes
-│   └── errorCatalogs.js  # Catálogos de tipos de error
-├── 📁 css/
-│   └── styles.scss       # Estilos principales
-├── 📁 mock/              # Datos de ejemplo
-│   ├── source-transcription.json
-│   └── source-sintesis.json
-├── 📁 assets/legacy/     # Versiones anteriores
-├── 📁 dist/              # Archivos compilados
-├── 📄 package.json       # Dependencias y scripts
-└── 📄 webpack.config.cjs # Configuración de build
+INF-meets-auditor/
+├── README.md              # Documentación principal
+├── package.json           # Dependencias y scripts
+├── webpack.config.cjs     # Configuración de build
+├── .gitignore            # Archivos ignorados por Git
+├── src/                   # Código fuente principal
+│   ├── index.html        # Template HTML principal
+│   ├── js/               # Código JavaScript modular
+│   │   ├── main.js         # Lógica principal y estado
+│   │   ├── render.js       # Renderizado de UI
+│   │   ├── export.js       # Exportación CSV/backup
+│   │   ├── jsonSource.js   # Carga de JSON desde APIs
+│   │   ├── storage.js      # Persistencia localStorage
+│   │   ├── utils.js        # Utilidades comunes
+│   │   └── errorCatalogs.js # Catálogos de tipos de error
+│   ├── css/
+│   │   └── styles.scss     # Estilos principales
+│   ├── mock/            # Datos de ejemplo para testing
+│   │   ├── source-transcription.json
+│   │   └── source-sintesis.json
+│   └── assets/legacy/   # Versiones históricas
+│       └── README.md       # Documentación legacy
+├── dist/                # Archivos compilados (generado)
+└── node_modules/        # Dependencias (generado)
 ```
 
 ## 🔧 Desarrollo
@@ -129,7 +130,7 @@ La aplicación acepta JSON con estructura específica:
 }
 ```
 
-Ver archivos en `mock/` para ejemplos completos.
+Ver archivos en `src/mock/` para ejemplos completos.
 
 ## 🔄 Versionado
 
