@@ -5,32 +5,16 @@ import './filters.js';
 import './render.js';
 import './export.js';
 import './synth.js';
+import './jsonSource.js';
+import { ERROR_CATALOG_T, ERROR_CATALOG_S } from './errorCatalogs.js';
 
 // Estado global y catálogos
-const ERROR_CATALOG_T = [
-  { key:'orador',   label:'Err. orador',      desc:'Hablante asignado ≠ real' },
-  { key:'cambio',     label:'Err. cambio habl.',  desc:'Se omitió cambio de hablante' },
-  { key:'termino',    label:'Err. término',       desc:'Palabra mal transcrita' },
-  { key:'precision',  label:'Err. precisión',     desc:'Información mal recogida' },
-  { key:'omision',    label:'Err. omisión',       desc:'Falta info que sí se dijo' },
-  { key:'anadido',    label:'Err. añadido',       desc:'Se añadió contenido no dicho' },
-  { key:'colapso',    label:'Err. colapso',       desc:'Voces simultáneas mal tratadas' },
-  { key:'ortografia', label:'Err. ortografía',    desc:'Ortografía/puntuación pobre' },
-  { key:'estilo',     label:'Err. estilo',        desc:'Ruido excesivo / muletillas' },
-  { key:'fragmentacion', label:'Err. fragmentación', desc:'Bloques separados de un mismo orador' }
-];
-const ERROR_CATALOG_S = [
-  { key:'coherencia',   label:'Coherencia',     desc:'Ideas conectadas y ordenadas' },
-  { key:'completitud',  label:'Completitud',    desc:'Cubre todos los puntos clave' },
-  { key:'relevancia',   label:'Relevancia',     desc:'Evita ruido y relleno' },
-  { key:'redundancia',  label:'Redundancia',    desc:'Repeticiones innecesarias' },
-  { key:'estructura',   label:'Estructura',     desc:'Titulado y secciones claras' },
-  { key:'segmentacion',   label:'Segmentación',     desc:'Exceso de conceptos en mismo bloque' }
-];
+let activeTab = 'T'; // 'T' transcripción, 'S' síntesis, 'H' ayuda
+let stateT = { items: [], annotations: {}, enabledErrors: new Set(ERROR_CATALOG_T.map(e=>e.key)), filter: '' };
+let stateS = { items: [], annotations: {}, enabledErrors: new Set(ERROR_CATALOG_S.map(e=>e.key)), filter: '', globalSynthText: '' };
 
-const stateT = { items: [], annotations: {}, enabledErrors: new Set(ERROR_CATALOG_T.map(e=>e.key)), filter:'' };
-const stateS = { items: [], annotations: {}, enabledErrors: new Set(ERROR_CATALOG_S.map(e=>e.key)), filter:'', globalSynthText: '' };
-let activeTab = 'T'; // 'T' transcripción, 'S' síntesis
+// Variable global para el título de la reunión
+let meetingTitle = '';
 
 // Exponer variables y funciones globalmente
 window.ERROR_CATALOG_T = ERROR_CATALOG_T;
@@ -38,13 +22,14 @@ window.ERROR_CATALOG_S = ERROR_CATALOG_S;
 window.stateT = stateT;
 window.stateS = stateS;
 window.activeTab = activeTab;
+window.meetingTitle = meetingTitle;
 
 // Funciones de anotación y edición
 function setItems(json){
   if (activeTab==='S'){
     stateS.items = json.items || [];
     stateS.annotations = {}; stateS.items.forEach((_,i)=> stateS.annotations[i]={counts:{}, note:'', open:false});
-  } else {
+  } else if (activeTab==='T') {
     stateT.items = json.items || [];
     stateT.annotations = {}; stateT.items.forEach((_,i)=> stateT.annotations[i]={counts:{}, note:'', open:false});
     if (json.date) {
@@ -91,10 +76,22 @@ function setNote(tab,index,text){
 window.setNote = setNote;
 
 function getMeetingDate() {
+  // Asegurar que tenemos un activeTab válido
+  if (!activeTab) {
+    activeTab = 'T'; // Default fallback
+  }
+
   let items = (activeTab === 'T') ? (stateT?.items || []) : (stateS?.items || []);
+
+  // Si no hay items, retornar null
+  if (!items || items.length === 0) {
+    return null;
+  }
+
   for (let i = 0; i < items.length; i++) {
-    if (items[i].start || items[i].start_date_time) {
-      return items[i].start || items[i].start_date_time;
+    const dateValue = items[i].date;
+    if (dateValue && dateValue !== 'undefined' && dateValue !== '') {
+      return dateValue;
     }
   }
   return null;
@@ -108,10 +105,123 @@ function getBiteOffsetSeconds(biteDate, meetingDate) {
 }
 window.getBiteOffsetSeconds = getBiteOffsetSeconds;
 
+// Funciones para manejar el título de la reunión
+function setMeetingTitle(title) {
+  meetingTitle = title || '';
+  window.meetingTitle = meetingTitle;
+  updateHeaderTitle();
+}
+
+function updateHeaderTitle() {
+  const headerTitle = document.querySelector('h1');
+  if (headerTitle) {
+    if (meetingTitle) {
+      headerTitle.textContent = `Auditor - ${meetingTitle}`;
+    } else {
+      headerTitle.textContent = 'Auditor';
+    }
+  }
+}
+
+function getMeetingTitle() {
+  return meetingTitle;
+}
+
+window.setMeetingTitle = setMeetingTitle;
+window.updateHeaderTitle = updateHeaderTitle;
+window.getMeetingTitle = getMeetingTitle;
+
+// Funciones para manejar la persistencia de tabs en URL
+function setActiveTab(tab) {
+  activeTab = tab;
+  window.activeTab = activeTab;
+
+  // Actualizar URL hash
+  const hashMap = { 'T': 'transcripcion', 'S': 'sintesis', 'H': 'ayuda' };
+  window.location.hash = hashMap[tab] || 'transcripcion';
+}
+
+function getTabFromHash() {
+  const hash = window.location.hash.substring(1); // Quitar el #
+  const tabMap = { 'transcripcion': 'T', 'sintesis': 'S', 'ayuda': 'H' };
+  return tabMap[hash] || 'T'; // Default a transcripción
+}
+
+function switchToTab(tab) {
+  setActiveTab(tab);
+
+  // Actualizar UI de tabs
+  document.getElementById('tabTrans').setAttribute('aria-selected', tab === 'T' ? 'true' : 'false');
+  document.getElementById('tabSynth').setAttribute('aria-selected', tab === 'S' ? 'true' : 'false');
+  document.getElementById('tabHelp').setAttribute('aria-selected', tab === 'H' ? 'true' : 'false');
+
+  // Mostrar/ocultar contenido
+  document.getElementById('tabTransWrap').classList.toggle('hidden', tab !== 'T');
+  document.getElementById('tabSynthWrap').classList.toggle('hidden', tab !== 'S');
+  document.getElementById('tabHelpWrap').classList.toggle('hidden', tab !== 'H');
+
+  // Manejar sidebar
+  if (tab === 'H') {
+    document.getElementById('sidebar-legend').style.display = 'none';
+  } else {
+    renderSidebarLegend(tab);
+  }
+}
+
+window.setActiveTab = setActiveTab;
+window.getTabFromHash = getTabFromHash;
+window.switchToTab = switchToTab;
+
+// Función para renderizar la leyenda de la sidebar
+function renderSidebarLegend(tab) {
+  const legendDiv = document.getElementById('sidebar-legend-content');
+  const sidebarLegend = document.getElementById('sidebar-legend');
+
+  // Mostrar la sidebar si estaba oculta
+  sidebarLegend.style.display = 'block';
+
+  let html = '';
+  if (tab === 'T') {
+    html += '<div class="legend-block"><b>Leyenda errores transcripción:</b><ul style="margin:0.5em 0 0 1em;padding:0;">';
+    ERROR_CATALOG_T.forEach(e => {
+      html += `<li><b>${e.label}:</b> <span style='color:#444'>${e.desc}</span></li>`;
+    });
+    html += '</ul></div>';
+  } else if (tab === 'S') {
+    html += '<div class="legend-block"><b>Leyenda errores síntesis:</b><ul style="margin:0.5em 0 0 1em;padding:0;">';
+    ERROR_CATALOG_S.forEach(e => {
+      html += `<li><b>${e.label}:</b> <span style='color:#444'>${e.desc}</span></li>`;
+    });
+    html += '</ul></div>';
+  }
+  legendDiv.innerHTML = html;
+}
+
+window.renderSidebarLegend = renderSidebarLegend;
+
 // Inicialización y listeners principales
 document.addEventListener('DOMContentLoaded', () => {
+  // Mostrar versión de la app
+  const versionElement = document.getElementById('app-version');
+  if (versionElement) {
+    try {
+      // Intentar usar la variable inyectada por Webpack
+      const version = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '2.0.0';
+      versionElement.textContent = `v${version}`;
+      console.log('App version loaded:', version);
+    } catch (error) {
+      // Fallback si hay error
+      versionElement.textContent = 'error';
+      console.warn('Version injection failed, using fallback:', error);
+    }
+  }
+
   // Cargar estado local
   loadFromLocal();
+
+  // Configurar validación de JSON source
+  setupJsonSourceValidation();
+
   // Demo si vacío
   if (stateT.items.length===0 && stateS.items.length===0){
     stateT.items = [
@@ -124,9 +234,17 @@ document.addEventListener('DOMContentLoaded', () => {
       { title:'Bloqueadores', text:'INFO EJEMPLO Validación de seguridad pendiente.' }
     ];
     stateS.annotations = {0:{counts:{},note:'',open:false},1:{counts:{},note:'',open:false}};
+    // Guardar datos mock en localStorage
     saveToLocal();
   }
+
+
+  // Inicializar tab desde URL o default
+  switchToTab(getTabFromHash());
+
+  // Renderizar todo después de cargar/inicializar datos
   renderAll();
+  renderFooterTotals();
 
   // Eventos de archivo, exportar, reset
   $('#file').addEventListener('change', e => {
@@ -136,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
     r.onload = () => {
       try {
         const json = JSON.parse(r.result);
-        
+
         // Detectar si es un backup completo o datos del tab activo
         if (json.version && json.transcripcion && json.sintesis) {
           // Es un backup completo
@@ -154,10 +272,17 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     r.readAsText(f);
   });
-  
+
   $('#saveBackup').addEventListener('click', exportBackup);
   $('#exportCsv').addEventListener('click', exportCSV);
-  $('#reset').addEventListener('click', ()=>{ if (confirm('¿Borrar todo el estado guardado (transcripción y síntesis)?')){ localStorage.removeItem(LS_T); localStorage.removeItem(LS_S); location.reload(); } });
+  $('#reset').addEventListener('click', ()=>{
+    if (confirm('¿Borrar todo el estado guardado (transcripción y síntesis)?')){
+      localStorage.removeItem(LS_T);
+      localStorage.removeItem(LS_S);
+      localStorage.removeItem(LS_TITLE);
+      location.reload();
+    }
+  });
 
   // Filtros
   $('#qT').addEventListener('input', e=>{ stateT.filter = e.target.value.trim(); render('T'); });
@@ -166,8 +291,17 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#qS').addEventListener('keydown', e=>{ if (e.key==='Enter' && e.target.value===''){ stateS.filter=''; e.target.value=''; render('S'); }});
 
   // Tabs
-  $('#tabTrans').addEventListener('click', ()=>{ activeTab='T'; $('#tabTrans').setAttribute('aria-selected','true'); $('#tabSynth').setAttribute('aria-selected','false'); $('#tabTransWrap').classList.remove('hidden'); $('#tabSynthWrap').classList.add('hidden'); renderSidebarLegend('T'); });
-  $('#tabSynth').addEventListener('click', ()=>{ activeTab='S'; $('#tabTrans').setAttribute('aria-selected','false'); $('#tabSynth').setAttribute('aria-selected','true'); $('#tabTransWrap').classList.add('hidden'); $('#tabSynthWrap').classList.remove('hidden'); renderSidebarLegend('S'); });
+  $('#tabTrans').addEventListener('click', ()=>{
+    switchToTab('T');
+  });
+
+  $('#tabSynth').addEventListener('click', ()=>{
+    switchToTab('S');
+  });
+
+  $('#tabHelp').addEventListener('click', ()=>{
+    switchToTab('H');
+  });
 
   // Footer toggle
   $('#toggleFooter').addEventListener('click', ()=>{ $('#footerTotals').classList.toggle('open'); });
@@ -182,25 +316,12 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   legendContent.classList.remove('open');
   legendChevron.classList.remove('open');
+});
 
-  // Leyenda inicial
-  function renderSidebarLegend(tab) {
-    const legendDiv = document.getElementById('sidebar-legend-content');
-    let html = '';
-    if (tab === 'T') {
-      html += '<div class="legend-block"><b>Leyenda errores transcripción:</b><ul style="margin:0.5em 0 0 1em;padding:0;">';
-      ERROR_CATALOG_T.forEach(e => {
-        html += `<li><b>${e.label}:</b> <span style='color:#444'>${e.desc}</span></li>`;
-      });
-      html += '</ul></div>';
-    } else if (tab === 'S') {
-      html += '<div class="legend-block"><b>Leyenda errores síntesis:</b><ul style="margin:0.5em 0 0 1em;padding:0;">';
-      ERROR_CATALOG_S.forEach(e => {
-        html += `<li><b>${e.label}:</b> <span style='color:#444'>${e.desc}</span></li>`;
-      });
-      html += '</ul></div>';
-    }
-    legendDiv.innerHTML = html;
+// Listener para cambios en el hash (navegación del navegador)
+window.addEventListener('hashchange', () => {
+  const tabFromHash = getTabFromHash();
+  if (tabFromHash !== activeTab) {
+    switchToTab(tabFromHash);
   }
-  renderSidebarLegend('T');
 });

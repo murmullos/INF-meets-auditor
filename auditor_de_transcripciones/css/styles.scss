@@ -43,6 +43,21 @@ header {
     font-size: 18px;
     margin: 0;
     letter-spacing: .2px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .version-badge {
+      background: rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 0.25rem 0.5rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      font-family: 'Courier New', monospace;
+      letter-spacing: 0.5px;
+    }
   }
 
   .right {
@@ -50,6 +65,10 @@ header {
     display: flex;
     gap: 8px;
     align-items: center;
+    label {
+      font-size: 13px;
+      line-height: 15px;
+    }
   }
 }
 
@@ -78,6 +97,45 @@ header {
       border-color: var(--chipBorder);
     }
   }
+
+  .tab-btn {
+    padding: 12px 24px;
+    border: none;
+    background: #f8fafc;
+    cursor: pointer;
+    border-radius: 8px 8px 0 0;
+    font-weight: 500;
+    color: var(--muted);
+    transition: all 0.2s;
+
+    &[aria-selected="true"] {
+      background: #fff;
+      color: #1f2937;
+      border-bottom: 2px solid #3b82f6;
+    }
+
+    &:hover {
+      background: #e2e8f0;
+    }
+  }
+
+  .tab-help {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    color: white !important;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+
+    &:hover {
+      background: linear-gradient(135deg, #059669, #047857) !important;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4);
+    }
+
+    &[aria-selected="true"] {
+      background: linear-gradient(135deg, #047857, #065f46) !important;
+      border-bottom: 2px solid #10b981;
+    }
+  }
 }
 
 .container {
@@ -85,6 +143,12 @@ header {
   grid-template-columns: 340px 1fr;
   gap: 16px;
   padding: 16px;
+}
+
+#tabHelpWrap {
+  .container {
+    grid-template-columns: 1fr;
+  }
 }
 
 .panel {
@@ -230,10 +294,28 @@ button, .btn {
   flex-direction: column;
   gap: 6px;
 
-  .s-title {
-    font-weight: 600;
-    font-size: 16px;
+  .meta {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: var(--muted);
+
+    .tag {
+      background: #f1f5f9;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+    }
   }
+
+  .s-title {
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #1f2937;
+  }
+
   .s-text {
     white-space: pre-wrap;
     font-size: 15px;
@@ -341,7 +423,7 @@ details > summary { cursor: pointer; color: var(--muted); }
   padding-right: 8px;
 }
 
-.legend-toggle {
+.legend-toggle, .source-toggle {
   display: flex;
   align-items: center;
   cursor: pointer;
@@ -360,6 +442,16 @@ details > summary { cursor: pointer; color: var(--muted); }
     }
   }
 }
+
+.source-toggle {
+  padding-left: .5rem;
+  justify-content: start;
+  gap: 5rem;
+  summary {
+    color: green;
+  }
+
+}
 #sidebar-legend-content {
   display: none;
   margin-bottom: 1.2em;
@@ -369,5 +461,80 @@ details > summary { cursor: pointer; color: var(--muted); }
   padding: 12px 16px 10px 16px;
   &.open {
     display: block;
+  }
+}
+
+.help-content {
+  max-width: 800px;
+
+  .help-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+
+    h3 {
+      color: #1f2937;
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    h4 {
+      color: #374151;
+      margin: 1.5rem 0 0.5rem 0;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    ol, ul {
+      margin: 0.5rem 0;
+      padding-left: 1.5rem;
+
+      li {
+        margin-bottom: 0.5rem;
+        line-height: 1.6;
+      }
+    }
+
+    .ejemplo-url {
+      display: block;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+
+      code {
+        background: #e5e7eb;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.85rem;
+        word-break: break-all;
+      }
+    }
+
+    .info-tip {
+      background: #dbeafe;
+      border: 1px solid #93c5fd;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 1rem;
+      color: #1e40af;
+
+      b {
+        color: #1d4ed8;
+      }
+    }
+
+    kbd {
+      background: #374151;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      font-weight: bold;
+    }
   }
 }

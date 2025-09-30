@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinia - Exportar Transcripciones/Síntesis</title>
+    <!-- Librerías externas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/docx@9.5.1/dist/index.umd.cjs"></script>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Roboto', Arial, sans-serif; background: #f6f7fb; margin: 0; }
+        .container { max-width: 700px; margin: 32px auto 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 16px rgba(45,58,75,0.08); padding: 28px 34px 24px 34px; }
+        h1 { font-size: 2.1em; margin: 0 0 0.2em 0; color: #2d3a4b; font-weight: 700; letter-spacing: 0.01em; }
+        h2 { margin: 0 0 1.2em 0; color: #4d5c6d; font-size: 1.2em; font-weight: 400; letter-spacing: 0.01em; }
+        label { font-weight: 500; color: #2d3a4b; }
+        .input-group { margin-bottom: 1.4em; display: flex; align-items: center; gap: 1em; }
+        select, input[type="file"] { border: 1px solid #aab8c2; border-radius: 5px; padding: 7px 14px; font-size: 1em; font-family: inherit; background: #f7fafc; color: #2d3a4b; }
+        select:focus, input[type="file"]:focus { outline: 2px solid #007bff; }
+        input[type="checkbox"] { accent-color: #007bff; width: 1.1em; height: 1.1em; }
+        button { background: #007bff; color: white; border: none; border-radius: 5px; padding: 8px 18px; font-weight: 500; cursor: pointer; transition: background 0.18s; }
+        button:hover { background: #0056b3; }
+        #export-btn, #export-btn-text, #open-drive-btn, #download-json-text { margin-top: 18px; }
+        #open-drive-btn { background:#34a853; margin-left: 0; }
+        .tabs { display: flex; gap: 0.5em; margin-bottom: 18px; }
+        .tab-btn { background: #f7fafc; border: 1px solid #aab8c2; border-bottom: none; border-radius: 7px 7px 0 0; padding: 8px 24px; color: #2d3a4b; font-weight: 500; cursor: pointer; transition: background 0.18s, color 0.18s; margin-bottom: -2px; outline: none; }
+        .tab-btn.active { background: #fff; color: #007bff; border-bottom: 2px solid #fff; font-weight: 700; }
+        .tab-content { display: none; background: #fff; border: 1px solid #aab8c2; border-radius: 0 0 7px 7px; padding: 18px 18px 10px 18px; margin-bottom: 18px; }
+        .tab-content.active { display: block; }
+        #json-text { font-size: 1em; border: 1px solid #aab8c2; border-radius: 5px; padding: 10px; background: #f7fafc; color: #2d3a4b; resize: vertical; width: 96%; }
+        #result { margin-top: 18px; font-size: 1.08em; min-height: 1.2em; }
+        #info { background: #f7fafc; border-radius: 8px; border: 1px solid #e1e6ed; padding: 22px 22px 12px 22px; margin-top: 32px; box-shadow: 0 2px 8px rgba(45,58,75,0.04); }
+        #info h3 { margin-top: 0; color: #007bff; font-size: 1.1em; }
+        #info ol { margin: 0 0 0 1.5em; padding: 0; }
+        #info li { margin-bottom: 0.6em; }
+        #info code, #info kbd { background: #eef3fa; color: #0056b3; border-radius: 4px; padding: 2px 6px; font-size: 0.97em; }
+        #info .info-tip { background: #e6f9ed; color: #187a3c; border-left: 4px solid #34a853; padding: 10px 16px; border-radius: 6px; margin-top: 1.2em; font-size: 0.99em; }
+        .ejemplo-url { color: #555; font-size: 0.98em; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Infinia</h1>
+    <h2>Exportar Transcripciones/Síntesis</h2>
+    <div class="tabs">
+        <button class="tab-btn active" id="tab-text-btn" type="button">Pegar JSON manualmente</button>
+        <button class="tab-btn" id="tab-file-btn" type="button" style="display: none;">Cargar archivo JSON</button>
+    </div>
+    <div id="tab-text" class="tab-content active">
+        <form id="export-form-text">
+            <div class="input-group">
+                <label for="json-text">Pega aquí el JSON:</label>
+            </div>
+            <textarea id="json-text" rows="14" style="width:96%;font-family:monospace;"></textarea>
+            <div style="display:flex;gap:1em;margin-top:1em;align-items:center;">
+                <button id="download-json-text" type="button">Descargar JSON</button>
+            </div>
+            <div class="input-group" style="margin-top:1.5em;">
+                <label for="export-type-text">Formato de exportación:</label>
+                <select id="export-type-text">
+                    <option value="word">Word</option>
+                    <option value="txt">txt</option>
+                    <option value="pdf">pdf</option>
+                </select>
+                <label style="margin-left: 1em;">
+                    <input type="checkbox" id="add-review-lines-text">
+                    Añadir líneas de revisión
+                </label>
+            </div>
+            <button id="export-btn-text" type="button">Exportar</button>
+            <button id="save-local-btn" type="button">Guardar en LocalStorage</button>
+        </form>
+    </div>
+    <div id="result"></div>
+    <button id="open-drive-btn" type="button">Subir a Google Drive</button>
+    <div id="info">
+        <h3>¿Cómo exportar tu transcripción/síntesis?</h3>
+        <ol>
+            <li>Ve al enlace de la reunión y selecciona la pestaña <b>Transcripción</b> o <b>Síntesis</b>. <br></li>
+            <li>Accede al <b>debugger</b> de tu navegador (<kbd>F12</kbd>).</li>
+            <li>Ve a la pestaña <b>Network</b> o <b>Red</b>.</li>
+            <li>Haz click en la llamada a la API que contiene la response.<br>
+                <span class="ejemplo-url">Ejemplo: <code>https://infinia-app.private.infinia.dev.gcp.paradigmadigital.com/meetings/01K1TB0RKAFJ19M8WE7A5BXT4X</code></span>
+            </li>
+            <li>Haz click en la pestaña <b>Response</b>.</li>
+            <li>Selecciona todo el texto y cópialo.</li>
+            <li>Pega el contenido en el textarea.</li>
+
+        </ol>
+        <div class="info-tip">
+            <b>Nota:</b> Para hacer funcionar la web de auditoría de errores hay que primero guardar la transcripción en el localstorage y después la síntesis.
+        </div>
+    </div>
+</div>
+<script>
+// ======================
+// LÓGICA JS COMPLETA
+// ======================
+let lastJsonBites = null;
+let lastJsonType = null; // 'transcripcion' o 'sintesis'
+let manualFileBaseName = 'manual';
+
+function sanitizeFileName(name) {
+    return name.replace(/[^a-zA-Z0-9_\-\.\(\)\[\] ]+/g, '').replace(/\s+/g, '_').substring(0, 48).trim() || 'manual';
+}
+
+function getExportBaseName() {
+    if (lastJsonType === 'sintesis') return (manualFileBaseName || 'archivo') + '_sintesis';
+    if (lastJsonType === 'transcripcion') return (manualFileBaseName || 'archivo') + '_transcripcion';
+    return manualFileBaseName || 'archivo';
+}
+
+function showResult(html) {
+    document.getElementById('result').innerHTML = html;
+}
+
+// --- VALIDACIÓN AUTOMÁTICA DEL TEXTAREA ---
+const jsonTextArea = document.getElementById('json-text');
+if (jsonTextArea) {
+    jsonTextArea.addEventListener('input', function() {
+        const text = jsonTextArea.value;
+        try {
+            const json = JSON.parse(text);
+            if (json.bites && Array.isArray(json.bites)) {
+                lastJsonBites = json.bites;
+                if (json.bites.length > 0) {
+                    if ('title' in json.bites[0] && !('speaker' in json.bites[0])) {
+                        lastJsonType = 'sintesis';
+                        manualFileBaseName = (json.meeting && json.meeting.title) ? sanitizeFileName(json.meeting.title) : 'sintesis';
+                        showResult('<span style="color:#187a3c;font-weight:bold;">Texto detectado como síntesis.</span> Listo para exportar.');
+                    } else if ('speaker' in json.bites[0]) {
+                        lastJsonType = 'transcripcion';
+                        manualFileBaseName = json.title ? sanitizeFileName(json.title) : 'transcripcion';
+                        showResult('<span style="color:#187a3c;font-weight:bold;">Texto detectado como transcripción.</span> Listo para exportar.');
+                    } else {
+                        lastJsonType = null;
+                        manualFileBaseName = 'manual';
+                        showResult('<span style="color:#c0392b;font-weight:bold;">Error:</span> El JSON pegado no corresponde a un formato de transcripción ni de síntesis soportado.');
+                    }
+                } else {
+                    lastJsonType = null;
+                    manualFileBaseName = 'manual';
+                    showResult('<span style="color:#c0392b;font-weight:bold;">Error:</span> El JSON pegado no contiene ningún elemento en el array <b>bites</b>.');
+                }
+            } else {
+                lastJsonBites = null;
+                lastJsonType = null;
+                manualFileBaseName = 'manual';
+                showResult('<span style="color:#c0392b;font-weight:bold;">Error:</span> El JSON pegado no contiene el array <b>bites</b> o no es válido.');
+            }
+        } catch {
+            lastJsonBites = null;
+            lastJsonType = null;
+            manualFileBaseName = 'manual';
+            showResult('<span style="color:#c0392b;font-weight:bold;">Error:</span> El texto pegado no es un JSON válido.');
+        }
+        window._manualFileName = getExportBaseName() + '.json';
+    });
+}
+
+document.getElementById('download-json-text').addEventListener('click', function() {
+    const text = document.getElementById('json-text').value;
+    let baseName = getExportBaseName();
+    try {
+        JSON.parse(text); // Valida formato
+    } catch {
+        showResult('<span style="color:#c0392b;font-weight:bold;">Error:</span> El texto no es un JSON válido.');
+        return;
+    }
+    const blob = new Blob([text], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = baseName + '.json';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+
+function formatTime(iso) {
+    if (!iso) return '';
+    try {
+        const date = new Date(iso);
+        return date.toISOString().substr(11, 8); // hh:mm:ss
+    } catch {
+        return iso;
+    }
+}
+
+// Exportar a PDF, Word, TXT (transcripción)
+function exportBitesToPDF(bites, fileName, originalFileName, addReviewLine = false) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    const pageWidth  = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 56;
+    const contentWidth = pageWidth - margin * 2;
+    const FONT_FAMILY = "helvetica";
+    const titleSize = 22;
+    const nameSize  = 13;
+    const textSize  = 12;
+    const lineHeight = 1.5;
+    const leadingTitle = titleSize * lineHeight;
+    const leadingName  = nameSize  * lineHeight;
+    const leadingText  = textSize  * lineHeight;
+    const BLACK = [0, 0, 0];
+    const ORANGE_SOFT = [255, 160, 122];
+    let y = margin;
+    function ensureSpace(needed) {
+        if (y + needed > pageHeight - margin) {
+            doc.addPage();
+            y = margin;
+        }
+    }
+    function writeParagraph({ text, size, bold = false, color = BLACK, after = 0 }) {
+        doc.setFont(FONT_FAMILY, bold ? "bold" : "normal");
+        doc.setFontSize(size);
+        doc.setTextColor(...color);
+        const wrap = doc.splitTextToSize(text, contentWidth);
+        const step = size * lineHeight;
+        const needed = wrap.length * step + after;
+        ensureSpace(needed);
+        wrap.forEach(line => {
+            doc.text(line, margin, y);
+            y += step;
+        });
+        y += after;
+    }
+    function blankLines(n = 1, baseLeading = leadingText) {
+        ensureSpace(n * baseLeading);
+        y += n * baseLeading;
+    }
+    writeParagraph({ text: `Transcripción de la reunión : ${fileName}`, size: titleSize, bold: true, color: BLACK, after: 0 });
+    blankLines(1, leadingTitle);
+    bites.forEach((bite, idx) => {
+        const usuario = bite.speaker?.name || "";
+        const inicio  = formatTime(bite.start_date_time);
+        const fin     = formatTime(bite.end_date_time);
+        const texto   = bite.text || "";
+        writeParagraph({ text: `${usuario} (${inicio} - ${fin})`, size: nameSize, bold: true, color: BLACK, after: 6 });
+        writeParagraph({ text: texto, size: textSize, bold: false, color: BLACK, after: 0 });
+        blankLines(1);
+        if (addReviewLine) {
+            writeParagraph({ text: "Revisión:", size: textSize, bold: true, color: ORANGE_SOFT, after: 0 });
+            blankLines(2);
+        } else {
+            blankLines(1);
+        }
+    });
+    const exportName = originalFileName ? originalFileName.replace(/\.[^.]+$/, ".pdf") : "transcripcion.pdf";
+    doc.save(exportName);
+}
+function exportBitesToWord(bites, fileName, addReviewLine = false, originalFileName) {
+    const { Document, Packer, Paragraph, TextRun } = window.docx;
+    const doc = new Document({
+        styles: { paragraphStyles: [{ id: "Normal", name: "Normal", run: { font: "Calibri", size: 24 }, paragraph: { spacing: { line: 276 } } }] },
+        sections: [{
+            properties: {},
+            children: [
+                new Paragraph({ children: [ new TextRun({ text: `Transcripción de la reunión : ${fileName}`, bold: true, size: 44 }) ] }),
+                new Paragraph({ children: [new TextRun('')]}),
+                new Paragraph({ children: [new TextRun('')]}),
+                ...bites.map(bite => {
+                    const usuario = bite.speaker?.name || '';
+                    const inicio = formatTime(bite.start_date_time);
+                    const fin = formatTime(bite.end_date_time);
+                    const texto = bite.text || '';
+                    let block = [
+                        new Paragraph({ spacing: { after: 120 }, children: [ new TextRun({ text: `${usuario} (${inicio} - ${fin})`, bold: true, size: 26 }) ] }),
+                        new Paragraph({ children: [new TextRun({ text: texto })] }),
+                        new Paragraph({ children: [new TextRun('')]}),
+                    ];
+                    if (addReviewLine) {
+                        block.push(
+                            new Paragraph({ children: [ new TextRun({ text: 'Revisión: ', bold: true, color: 'FFA07A' }) ] }),
+                            new Paragraph({ children: [new TextRun('')]}),
+                            new Paragraph({ children: [new TextRun('')]}),
+                        );
+                    } else {
+                        block.push(new Paragraph({ children: [new TextRun('')]}));
+                    }
+                    return block;
+                }).flat()
+            ]
+        }]
+    });
+    window.docx.Packer.toBlob(doc).then(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const exportName = originalFileName ? originalFileName.replace(/\.[^.]+$/, ".docx") : "transcripcion.docx";
+        a.download = exportName;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+}
+function exportBitesToTXT(bites, fileName, addReviewLine = false, originalFileName) {
+    let lines = [`Transcripción de la reunión : ${fileName}`,''];
+    lines.push('');
+    bites.forEach(bite => {
+        const usuario = bite.speaker?.name || '';
+        const inicio = formatTime(bite.start_date_time);
+        const fin = formatTime(bite.end_date_time);
+        const texto = bite.text || '';
+        lines.push(`${usuario} (${inicio} - ${fin})`);
+        lines.push('');
+        lines.push(texto);
+        if (addReviewLine) {
+            lines.push('');
+            lines.push('Revisión: ');
+        }
+        lines.push('');
+        lines.push('');
+    });
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const exportName = originalFileName ? originalFileName.replace(/\.[^.]+$/, ".txt") : "transcripcion.txt";
+    a.download = exportName;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+// Exportar SÍNTESIS
+function exportSintesisToPDF(bites, fileName, originalFileName, addReviewLine = false) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    const pageWidth  = doc.internal.pageSize.getWidth();
+    const margin = 56;
+    const contentWidth = pageWidth - margin * 2;
+    let y = margin;
+    const titleSize = 22;
+    const textSize = 12;
+    const lineHeight = 1.5;
+    const BLACK = [0, 0, 0];
+    const ORANGE_SOFT = [255, 160, 122];
+    function writeParagraph({ text, size, bold = false, color = BLACK, after = 0 }) {
+        doc.setFont('helvetica', bold ? 'bold' : 'normal');
+        doc.setFontSize(size);
+        doc.setTextColor(...color);
+        const wrap = doc.splitTextToSize(text, contentWidth);
+        const step = size * lineHeight;
+        wrap.forEach(line => {
+            doc.text(line, margin, y);
+            y += step;
+        });
+        y += after;
+    }
+    writeParagraph({ text: `Síntesis de la reunión: ${fileName}`, size: titleSize, bold: true, color: BLACK, after: 14 });
+    bites.forEach(bite => {
+        writeParagraph({ text: bite.title, size: textSize, bold: true, color: BLACK, after: 4 });
+        writeParagraph({ text: bite.text, size: textSize, bold: false, color: BLACK, after: 8 });
+        if (addReviewLine) {
+            writeParagraph({ text: "Revisión:", size: textSize, bold: true, color: ORANGE_SOFT, after: 14 });
+        }
+    });
+    const exportName = originalFileName ? originalFileName.replace(/\.[^.]+$/, '.pdf') : 'sintesis.pdf';
+    doc.save(exportName);
+}
+function exportSintesisToWord(bites, fileName, addReviewLine = false, originalFileName) {
+    const { Document, Packer, Paragraph, TextRun } = window.docx;
+    const doc = new Document({
+        styles: { paragraphStyles: [{ id: "Normal", name: "Normal", run: { font: "Calibri", size: 24 }, paragraph: { spacing: { line: 276 } } }] },
+        sections: [{
+            properties: {},
+            children: [
+                new Paragraph({ children: [ new TextRun({ text: `Síntesis de la reunión: ${fileName}`, bold: true, size: 44 }) ] }),
+                new Paragraph({ children: [new TextRun('')] }),
+                ...bites.map(bite => {
+                    let block = [
+                        new Paragraph({ children: [new TextRun({ text: bite.title, bold: true, size: 28 })], spacing: { after: 120 } }),
+                        new Paragraph({ children: [new TextRun({ text: bite.text, size: 24 })] }),
+                    ];
+                    block.push(new Paragraph({ children: [new TextRun('')] }));
+                    if (addReviewLine) {
+                        block.push(
+                            new Paragraph({ children: [new TextRun({ text: 'Revisión: ', bold: true, color: 'FFA07A' }) ] }),
+                            new Paragraph({ children: [new TextRun('')] }),
+                            new Paragraph({ children: [new TextRun('')] })
+                        );
+                    } else {
+                        block.push(new Paragraph({ children: [new TextRun('')] }));
+                    }
+                    return block;
+                }).flat()
+            ]
+        }]
+    });
+    window.docx.Packer.toBlob(doc).then(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const exportName = originalFileName ? originalFileName.replace(/\.[^.]+$/, '.docx') : 'sintesis.docx';
+        a.download = exportName;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+}
+function exportSintesisToTXT(bites, fileName, addReviewLine = false, originalFileName) {
+    let lines = [`Síntesis de la reunión: ${fileName}`,''];
+    bites.forEach(bite => {
+        lines.push(bite.title);
+        lines.push('');
+        lines.push(bite.text);
+        if (addReviewLine) {
+            lines.push('');
+            lines.push('Revisión: ');
+        }
+        lines.push('');
+        lines.push('');
+    });
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const exportName = originalFileName ? originalFileName.replace(/\.[^.]+$/, '.txt') : 'sintesis.txt';
+    a.download = exportName;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+// --- EXPORT DESDE TAB DE TEXTO ---
+const exportBtnText = document.getElementById('export-btn-text');
+if (exportBtnText) {
+    exportBtnText.addEventListener('click', function() {
+        if (!lastJsonBites) {
+            showResult('Primero pega un JSON válido.');
+            return;
+        }
+        const fileName = getExportBaseName();
+        let originalFileName;
+        const exportType = document.getElementById('export-type-text').value;
+        const addReview = document.getElementById('add-review-lines-text').checked;
+        if (exportType === 'word') originalFileName = fileName + '.docx';
+        else if (exportType === 'pdf') originalFileName = fileName + '.pdf';
+        else if (exportType === 'txt') originalFileName = fileName + '.txt';
+        else originalFileName = fileName + '.json';
+        if (lastJsonType === 'sintesis') {
+            if (exportType === 'pdf') {
+                exportSintesisToPDF(lastJsonBites, fileName, originalFileName, addReview);
+            } else if (exportType === 'word') {
+                exportSintesisToWord(lastJsonBites, fileName, addReview, originalFileName);
+            } else if (exportType === 'txt') {
+                exportSintesisToTXT(lastJsonBites, fileName, addReview, originalFileName);
+            }
+        } else if (lastJsonType === 'transcripcion') {
+            if (exportType === 'pdf') {
+                exportBitesToPDF(lastJsonBites, fileName, originalFileName, addReview);
+            } else if (exportType === 'word') {
+                exportBitesToWord(lastJsonBites, fileName, addReview, originalFileName);
+            } else if (exportType === 'txt') {
+                exportBitesToTXT(lastJsonBites, fileName, addReview, originalFileName);
+            }
+        } else {
+            showResult('<span style="color:#c0392b;font-weight:bold;">Error:</span> El texto no es válido para exportación.');
+        }
+    });
+}
+// --- GUARDAR EN LOCALSTORAGE SEGÚN TIPO ---
+document.getElementById('save-local-btn').addEventListener('click', function() {
+    let data = null;
+    if (lastJsonType === 'transcripcion' && Array.isArray(lastJsonBites)) {
+        data = lastJsonBites.map(bite => ({
+            speaker: bite.speaker?.name || '',
+            start: bite.start_date_time || '',
+            end: bite.end_date_time || '',
+            text: bite.text || ''
+        }));
+        localStorage.setItem('auditor_trans_v1', JSON.stringify({items:data}));
+        alert('Transcripción guardada en localStorage como auditor_trans_v1');
+    } else if (lastJsonType === 'sintesis' && Array.isArray(lastJsonBites)) {
+        data = lastJsonBites.map(bite => ({
+            title: bite.title || '',
+            text: bite.text || ''
+        }));
+        localStorage.setItem('auditor_synth_v1', JSON.stringify({items:data}));
+        alert('Síntesis guardada en localStorage como auditor_synth_v1');
+    } else {
+        alert('No hay datos válidos para guardar.');
+    }
+});
+// Botón para abrir Google Drive
+const openDriveBtn = document.getElementById('open-drive-btn');
+if (openDriveBtn) {
+    openDriveBtn.addEventListener('click', function() {
+        window.open('https://drive.google.com/drive/my-drive', '_blank');
+    });
+}
+</script>
+</body>
+</html>

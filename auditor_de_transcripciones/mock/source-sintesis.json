@@ -1,0 +1,56 @@
+{
+  "bites": [
+    {
+      "title": "Discusión sobre la gestión de fechas y horas",
+      "text": "Se continúa la conversación sobre la necesidad de estandarizar el uso de UTC en las transcripciones y cómo esto afecta a la interpretación de las fechas por parte de los usuarios. Se menciona que es importante que las fechas sean convertidas a la hora local en las transcripciones para facilitar su comprensión. Sergio Recio Ferrón y Óscar Ferrer Sánchez coinciden en que se debe mantener UTC en el backend y transformar las fechas en el frontend. Se discute la importancia de tener claridad en la documentación y en la gestión de roles y permisos en el sistema.",
+      "start_date_time": "2025-07-08T08:36:56Z",
+      "end_date_time": "2025-07-08T08:50:59Z",
+      "index": 0,
+      "id": "01JZMP0XHRPA37X5YQ7EEGRPB3"
+    },
+    {
+      "title": "Auditoría de seguridad y planificación de tareas",
+      "text": "Gerardo Montes Rodríguez informa sobre su trabajo en la auditoría de seguridad, mencionando que ha encontrado problemas en los controles de acceso y que planea generar un informe con las mejoras necesarias. Se discute la importancia de tener un esquema claro de datos y roles en la plataforma. Silvia García Bautista sugiere que se organicen reuniones para planificar el trabajo del próximo sprint, y se menciona la necesidad de documentar las versiones de los microservicios y sus cambios.",
+      "start_date_time": "2025-07-08T08:50:59Z",
+      "end_date_time": "2025-07-08T09:12:11Z",
+      "index": 1,
+      "id": "01JZMP0XHRADF0SS3MZCYATP01"
+    },
+    {
+      "title": "Revisión de prioridades y planificación del sprint",
+      "text": "Silvia García Bautista presenta las prioridades para el próximo sprint, destacando la necesidad de trabajar en el prototipo y en la automatización de procesos relacionados con las reuniones. Se discute la importancia de tener claridad en las tareas y en la planificación para evitar bloqueos en el equipo. Se acuerda que no se deben subir cambios de desarrollo antes de la revisión del sprint, y se enfatiza la necesidad de revisar las tareas pendientes para que la planificación sea efectiva. La reunión concluye con un recordatorio de que todos deben estar al tanto de las tareas y prioridades para el próximo sprint.",
+      "start_date_time": "2025-07-08T09:12:11Z",
+      "end_date_time": "2025-07-08T09:28:05Z",
+      "index": 2,
+      "id": "01JZMP0XHRRQD8NVRQFHEHXX35"
+    }
+  ],
+  "content": "Discusión sobre la gestión de fechas y horas\nSe continúa la conversación sobre la necesidad de estandarizar el uso de UTC en las transcripciones y cómo esto afecta a la interpretación de las fechas por parte de los usuarios. Se menciona que es importante que las fechas sean convertidas a la hora local en las transcripciones para facilitar su comprensión. Sergio Recio Ferrón y Óscar Ferrer Sánchez coinciden en que se debe mantener UTC en el backend y transformar las fechas en el frontend. Se discute la importancia de tener claridad en la documentación y en la gestión de roles y permisos en el sistema.\n2025-07-08T08:36:56Z\n2025-07-08T08:50:59Z\n \nAuditoría de seguridad y planificación de tareas\nGerardo Montes Rodríguez informa sobre su trabajo en la auditoría de seguridad, mencionando que ha encontrado problemas en los controles de acceso y que planea generar un informe con las mejoras necesarias. Se discute la importancia de tener un esquema claro de datos y roles en la plataforma. Silvia García Bautista sugiere que se organicen reuniones para planificar el trabajo del próximo sprint, y se menciona la necesidad de documentar las versiones de los microservicios y sus cambios.\n2025-07-08T08:50:59Z\n2025-07-08T09:12:11Z\n \nRevisión de prioridades y planificación del sprint\nSilvia García Bautista presenta las prioridades para el próximo sprint, destacando la necesidad de trabajar en el prototipo y en la automatización de procesos relacionados con las reuniones. Se discute la importancia de tener claridad en las tareas y en la planificación para evitar bloqueos en el equipo. Se acuerda que no se deben subir cambios de desarrollo antes de la revisión del sprint, y se enfatiza la necesidad de revisar las tareas pendientes para que la planificación sea efectiva. La reunión concluye con un recordatorio de que todos deben estar al tanto de las tareas y prioridades para el próximo sprint.\n2025-07-08T09:12:11Z\n2025-07-08T09:28:05Z\n ",
+  "id": "01JZMP0XH39ZV8TE3X5YQ09105",
+  "title": "Estandarización de fechas y planificación del próximo sprint",
+  "headline": "El equipo se reunió para abordar la estandarización del manejo de fechas y horas en las transcripciones, la auditoría de seguridad y la planificación del próximo sprint, enfatizando la importancia de la claridad en la documentación y la gestión de tareas.",
+  "created_on": "2025-07-08T09:28:05Z",
+  "meeting": {
+    "id": "01JZMP0XH39ZV8TE3X5YQ09105",
+    "title": "Reunión de equipo - Sprint Planning",
+    "date": "2025-07-08T08:36:56Z",
+    "participants": [
+      {
+        "name": "Sergio Recio Ferrón",
+        "role": "Backend Developer"
+      },
+      {
+        "name": "Óscar Ferrer Sánchez", 
+        "role": "Frontend Developer"
+      },
+      {
+        "name": "Gerardo Montes Rodríguez",
+        "role": "Security Auditor"
+      },
+      {
+        "name": "Silvia García Bautista",
+        "role": "Project Manager"
+      }
+    ]
+  }
+}

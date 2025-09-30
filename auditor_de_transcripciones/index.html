@@ -7,14 +7,14 @@
 </head>
 <body>
   <header>
-    <h1>📝 Auditor</h1>
+    <h1>📝 Auditor <span id="app-version" class="version-badge"></span></h1>
     <div class="right">
       <label class="btn">
         <input id="file" type="file" accept="application/json" hidden />
-        Cargar JSON / Backup
+        Cargar Backup
       </label>
-      <button id="save" class="btn">Exportar anotaciones (JSON)</button>
-      <button id="saveBackup" class="btn">Guardar como JSON</button>
+
+      <button id="saveBackup" class="btn">Guardar Backup</button>
       <button id="exportCsv" class="btn btn-success">Exportar Excel (CSV)</button>
       <button id="reset" class="btn btn-danger">Borrar estado</button>
     </div>
@@ -24,6 +24,7 @@
   <div class="tabs">
     <button id="tabTrans" class="tab-btn" aria-selected="true">Transcripción</button>
     <button id="tabSynth" class="tab-btn" aria-selected="false">Síntesis</button>
+    <button id="tabHelp" class="tab-btn tab-help" aria-selected="false">📖 Ayuda</button>
   </div>
 
   <!-- Sidebar leyenda de errores por tab -->
@@ -37,6 +38,15 @@
 
   <!-- ====== TAB: TRANSCRIPCIÓN ====== -->
   <div id="tabTransWrap">
+    <details class="source-toggle" id="jsonSourceSectionT">
+      <summary>Cargar JSON source de transcripción</summary>
+      <div class="quiet-box">
+        <p class="small muted">Pega aquí el JSON source de transcripción para procesarlo:</p>
+        <textarea id="jsonSourceTextT" rows="8" placeholder="Pega el JSON source aquí..." style="width: 100%; font-family: monospace; font-size: 12px; margin-bottom: 8px;"></textarea>
+        <div id="jsonValidationT" class="small" style="margin-bottom: 8px;"></div>
+        <button id="loadJsonSourceT" class="btn" disabled>Cargar transcripción</button>
+      </div>
+    </details>
     <div class="container">
       <section class="panel">
         <h2>Configuración y filtros (Transcripción)</h2>
@@ -52,6 +62,8 @@
               <p class="small muted">Clic en un tipo para activarlo o desactivarlo.</p>
             </div>
           </details>
+
+
           <div class="kpis">
             <div class="kpi"><h3>Bloques</h3><div id="kpiBlocksT" class="num">0</div></div>
             <div class="kpi"><h3>Bloques con error</h3><div id="kpiBlocksErrT" class="num">0</div></div>
@@ -80,6 +92,16 @@
 
   <!-- ====== TAB: SÍNTESIS ====== -->
   <div id="tabSynthWrap" class="hidden">
+    <!-- Sección de carga JSON source -->
+    <details class="source-toggle" id="jsonSourceSectionS">
+      <summary>Cargar JSON source de síntesis</summary>
+      <div class="quiet-box">
+        <p class="small muted">Pega aquí el JSON source de síntesis para procesarlo:</p>
+        <textarea id="jsonSourceTextS" rows="8" placeholder="Pega el JSON source aquí..." style="width: 100%; font-family: monospace; font-size: 12px; margin-bottom: 8px;"></textarea>
+        <div id="jsonValidationS" class="small" style="margin-bottom: 8px;"></div>
+        <button id="loadJsonSourceS" class="btn" disabled>Cargar síntesis</button>
+      </div>
+    </details>
     <div class="container">
       <section class="panel">
         <h2>Configuración y filtros (Síntesis)</h2>
@@ -95,6 +117,7 @@
               <p class="small muted">Clic en un tipo para activarlo o desactivarlo.</p>
             </div>
           </details>
+
           <div class="kpis">
             <div class="kpi"><h3>Bloques</h3><div id="kpiBlocksS" class="num">0</div></div>
             <div class="kpi"><h3>Bloques con error</h3><div id="kpiBlocksErrS" class="num">0</div></div>
@@ -124,6 +147,87 @@
     </div>
   </div>
 
+  <!-- ====== TAB: AYUDA ====== -->
+  <div id="tabHelpWrap" class="hidden">
+    <div class="container">
+      <section class="panel">
+        <h2>📖 Ayuda y documentación</h2>
+        <div class="help-content">
+
+          <div class="help-section">
+            <h3>¿Cómo exportar tu transcripción/síntesis?</h3>
+            <ol>
+              <li>Ve al enlace de la reunión en la app de Infinia V1 y selecciona la pestaña <b>Transcripción</b> o <b>Síntesis</b>.</li>
+              <li>Accede al <b>debugger</b> de tu navegador (<kbd>F12</kbd>).</li>
+              <li>Ve a la pestaña <b>Network</b> o <b>Red</b>.</li>
+              <li>Haz click en la llamada a la API que contiene la response.<br>
+                <span class="ejemplo-url">Ejemplo: <code>https://infinia-app.private.infinia.dev.gcp.paradigmadigital.com/meetings/01K1TB0RKAFJ19M8WE7A5BXT4X</code></span>
+              </li>
+              <li>Haz click en la pestaña <b>Response</b>.</li>
+              <li>Selecciona todo el texto y cópialo.</li>
+              <li>Pega el contenido en la sección "Cargar JSON source" del tab correspondiente.</li>
+            </ol>
+            <div class="info-tip">
+              <b>Nota:</b> El auditor detecta automáticamente si el JSON corresponde a transcripción o síntesis y valida su formato antes de cargarlo.
+            </div>
+          </div>
+
+          <div class="help-section">
+            <h3>🔧 Cómo usar el Auditor</h3>
+            <ol>
+              <li><b>Cargar datos:</b> Usa las secciones "Cargar JSON source" en cada tab para importar transcripciones o síntesis.</li>
+              <li><b>Anotar errores:</b> Haz clic en los chips de error junto a cada bloque para incrementar/decrementar contadores.</li>
+              <li><b>Añadir notas:</b> Usa el botón "Añadir nota" para comentarios específicos sobre cada bloque.</li>
+              <li><b>Filtrar contenido:</b> Usa el campo de búsqueda para filtrar bloques por contenido.</li>
+              <li><b>Exportar resultados:</b> Usa "Exportar Excel (CSV)" para generar un informe completo.</li>
+              <li><b>Guardar progreso:</b> Usa "Guardar Backup" para exportar todo tu trabajo y "Cargar Backup" para restaurarlo.</li>
+            </ol>
+          </div>
+
+          <div class="help-section">
+            <h3>📊 Tipos de Errores</h3>
+
+            <h4>Transcripción:</h4>
+            <ul>
+              <li><b>Err. orador:</b> Hablante asignado ≠ real</li>
+              <li><b>Err. cambio habl.:</b> Se omitió cambio de hablante</li>
+              <li><b>Err. término:</b> Palabra mal transcrita</li>
+              <li><b>Err. precisión:</b> Información mal recogida</li>
+              <li><b>Err. omisión:</b> Falta info que sí se dijo</li>
+              <li><b>Err. añadido:</b> Se añadió contenido no dicho</li>
+              <li><b>Err. colapso:</b> Voces simultáneas mal tratadas</li>
+              <li><b>Err. ortografía:</b> Ortografía/puntuación pobre</li>
+              <li><b>Err. estilo:</b> Ruido excesivo / muletillas</li>
+              <li><b>Err. fragmentación:</b> Bloques separados de un mismo orador</li>
+            </ul>
+
+            <h4>Síntesis:</h4>
+            <ul>
+              <li><b>Coherencia:</b> Ideas conectadas y ordenadas</li>
+              <li><b>Completitud:</b> Cubre todos los puntos clave</li>
+              <li><b>Relevancia:</b> Evita ruido y relleno</li>
+              <li><b>Redundancia:</b> Repeticiones innecesarias</li>
+              <li><b>Estructura:</b> Titulado y secciones claras</li>
+              <li><b>Segmentación:</b> Exceso de conceptos en mismo bloque</li>
+            </ul>
+          </div>
+
+          <div class="help-section">
+            <h3>💡 Consejos</h3>
+            <ul>
+              <li>Los datos se guardan automáticamente en tu navegador mientras trabajas.</li>
+              <li>Puedes usar <kbd>Alt + Clic</kbd> o <kbd>Cmd + Clic</kbd> en los chips de error para decrementar.</li>
+              <li>El título de la reunión se extrae automáticamente del JSON y aparece en el header.</li>
+              <li>Los archivos exportados incluyen el título de la reunión en el nombre.</li>
+              <li>Los timestamps se calculan relativamente al inicio de la reunión.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+    </div>
+  </div>
+
   <!-- Footer fijo colapsable de totales (combinado) -->
   <div id="footerTotals" class="footer-fixed">
     <div class="footer-bar">
@@ -131,6 +235,7 @@
       <div class="badge" id="badgeTotals">Errores: 0</div>
       <div class="badge" id="badgeBlocks">Bloques con error: 0</div>
       <div class="badge" id="badgeWords">Palabras totales: 0</div>
+      <div class="footer-version" id="footer-version"></div>
       <div class="spacer"></div>
       <span class="small muted">Clic en "Totales" para desplegar</span>
     </div>

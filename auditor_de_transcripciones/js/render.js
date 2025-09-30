@@ -38,18 +38,41 @@ function countWordsInTranscription(data) {
 function timePill(start, end) {
   const meetingDate = getMeetingDate();
   let pill = '';
-  if (meetingDate && start) {
-    const startSecs = getBiteOffsetSeconds(start, meetingDate);
-    pill += secondsToTimestamp(startSecs);
+  
+  if (meetingDate && start && start !== 'undefined' && start !== '') {
+    try {
+      const startSecs = getBiteOffsetSeconds(start, meetingDate);
+      if (!isNaN(startSecs) && isFinite(startSecs)) {
+        pill += secondsToTimestamp(startSecs);
+      } else {
+        pill += start;
+      }
+    } catch (error) {
+      console.warn('Error calculating start timestamp:', error);
+      pill += start;
+    }
   } else {
     pill += start ?? '¿?';
   }
-  if (meetingDate && end) {
-    const endSecs = getBiteOffsetSeconds(end, meetingDate);
-    pill += ' → ' + secondsToTimestamp(endSecs);
+  
+  if (meetingDate && end && end !== 'undefined' && end !== '') {
+    try {
+      const endSecs = getBiteOffsetSeconds(end, meetingDate);
+      if (!isNaN(endSecs) && isFinite(endSecs)) {
+        pill += ' → ' + secondsToTimestamp(endSecs);
+      } else if (end) {
+        pill += ' → ' + end;
+      }
+    } catch (error) {
+      console.warn('Error calculating end timestamp:', error);
+      if (end) {
+        pill += ' → ' + end;
+      }
+    }
   } else if (end) {
     pill += ' → ' + end;
   }
+  
   return el('span', { class: 'tag' }, pill);
 }
 function render(tab = activeTab) {
@@ -81,8 +104,10 @@ function render(tab = activeTab) {
       const noteArea = el('textarea', { class: ann.open ? '' : 'hidden', placeholder: 'Añade una nota para este bloque…' });
       noteArea.value = ann.note || '';
       noteArea.addEventListener('input', () => setNote('S', i, noteArea.value));
+      // Agregar header con timestamp para síntesis, similar a transcripción
+      const header = el('div', { class: 'meta' }, el('span', { class: 's-title' }, safe(b.title) || 'Sin título'), timePill(b.start, b.end));
       const block = el('li', { class: 'sblock' },
-        el('div', { class: 's-title' }, safe(b.title) || 'Sin título'),
+        header,
         el('div', { class: 's-text' }, safe(b.text) || ''),
         el('div', { class: 'row' }, chips, el('span', { class: 'spacer' }), el('button', { class: 'btn small', onclick: () => toggleNote('S', i) }, ann.open ? 'Ocultar nota' : 'Añadir nota')),
         noteArea

@@ -1,0 +1,274 @@
+{
+  "id" : "01JZMNVWWGZKZAXRS3E83ECQQK",
+  "project_id" : "01JZ5H21ACM7SE1MY8A2JM11VT",
+  "title" : "Infinia-sprint4-Daily",
+  "videoUrl" : "gs://parad-infinia-dev-tars-europe-west1-infinia-public/01JZ5H21ACM7SE1MY8A2JM11VT/meetings/01JZMNVWWGZKZAXRS3E83ECQQK/MEETING_VIDEO/01JZMNW218DB041A39W6BEMQ4G/fireflies_01JZMNVWWGZKZAXRS3E83ECQQK__Infinia-sprint4 Daily-2025-07-08T08:35:00Z.mp4",
+  "audioUrl" : null,
+  "duration" : 0.0,
+  "date" : "2025-07-08T08:35:00Z",
+  "created_on" : "2025-07-08T08:45:19.197915Z",
+  "updated_on" : "2025-08-01T09:10:45.769441Z",
+  "status" : "AUTOMATIC_REVIEWED",
+  "bites" : [ {
+    "text" : "Quita luego 5 min para una pregunta de porque estaba metiendo los de módil y no veo error en tu micro, pero tampoco veo que haya llamado a la gente, entonces me perdí un poco.",
+    "start_date_time" : "2025-07-08T08:35:00.08Z",
+    "end_date_time" : "2025-07-08T08:35:13.04Z",
+    "speaker" : {
+      "id" : "01JZMNWQ61D81XZ8PRT3CYV115",
+      "name" : "Sergio Casado Rivas"
+    },
+    "index" : 0,
+    "id" : "01JZMNWQ62F666M4AT74844YX8"
+  }, {
+    "text" : "Vale, ok.",
+    "start_date_time" : "2025-07-08T08:35:14.08Z",
+    "end_date_time" : "2025-07-08T08:35:15.44Z",
+    "speaker" : {
+      "id" : "01JZMNWQ61J9YNAJ9KHAMMF2SX",
+      "name" : "Gerardo Montes Rodríguez"
+    },
+    "index" : 1,
+    "id" : "01JZMNWQ62XRV1YT8HX3NQ32KP"
+  }, {
+    "text" : "He visto que me has escrito, pero no te he leído todavía.",
+    "start_date_time" : "2025-07-08T08:35:15.44Z",
+    "end_date_time" : "2025-07-08T08:35:17.84Z",
+    "speaker" : {
+      "id" : "01JZMNWQ61PHVDYWQ5G2VGAESN",
+      "name" : "Óscar Ferrer Sánchez"
+    },
+    "index" : 2,
+    "id" : "01JZMNWQ628JBPT1DMBJ3434AA"
+  }, {
+    "text" : "¿Estabas tú, Oscar, subiendo vídeos de proa o alguien?",
+    "start_date_time" : "2025-07-08T08:35:21.52Z",
+    "end_date_time" : "2025-07-08T08:35:23.92Z",
+    "speaker" : {
+      "id" : "01JZMNWQ61D81XZ8PRT3CYV115",
+      "name" : "Sergio Casado Rivas"
+    },
+    "index" : 3,
+    "id" : "01JZMNWQ62XBXQPXQ3AQMHZQ6W"
+  }, {
+    "text" : "Yo no.",
+    "start_date_time" : "2025-07-08T08:35:24.88Z",
+    "end_date_time" : "2025-07-08T08:35:25.36Z",
+    "speaker" : {
+      "id" : "01JZMNWQ61PHVDYWQ5G2VGAESN",
+      "name" : "Óscar Ferrer Sánchez"
+    },
+    "index" : 4,
+    "id" : "01JZMNWQ62QJVMQKR1KZQP6VG3"
+  }, {
+    "text" : "Pero alguien estaba subiendo vídeos de proa, porque me ha llegado un montón de notificaciones de que se estaban subiendo vídeos.",
+    "start_date_time" : "2025-07-08T08:35:25.36Z",
+    "end_date_time" : "2025-07-08T08:35:30.32Z",
+    "speaker" : {
+      "id" : "01JZMNWQ61D81XZ8PRT3CYV115",
+      "name" : "Sergio Casado Rivas"
+    },
+    "index" : 5,
+    "id" : "01JZMNWQ62QJVMQKR1KZQP6VG4"
+  }, {
+    "text" : "Yo no he subido nada.",
+    "start_date_time" : "2025-07-08T08:35:30.32Z",
+    "end_date_time" : "2025-07-08T08:35:31.44Z",
+    "speaker" : {
+      "id" : "01JZMNWQ61PHVDYWQ5G2VGAESN",
+      "name" : "Óscar Ferrer Sánchez"
+    },
+    "index" : 6,
+    "id" : "01JZMNWQ62QJVMQKR1KZQP6VG5"
+  }, {
+    "text" : "Vale, pues alguien estaba subiendo vídeos.",
+    "start_date_time" : "2025-07-08T08:35:31.44Z",
+    "end_date_time" : "2025-07-08T08:35:33.36Z",
+    "speaker" : {
+      "id" : "01JZMNWQ61D81XZ8PRT3CYV115",
+      "name" : "Sergio Casado Rivas"
+    },
+    "index" : 7,
+    "id" : "01JZMNWQ62QJVMQKR1KZQP6VG6"
+  }, {
+    "text" : "Bueno, pues nada.",
+    "start_date_time" : "2025-07-08T08:35:33.36Z",
+    "end_date_time" : "2025-07-08T08:35:34.32Z",
+    "speaker" : {
+      "id" : "01JZMNWQ61D81XZ8PRT3CYV115",
+      "name" : "Sergio Casado Rivas"
+    },
+    "index" : 8,
+    "id" : "01JZMNWQ62QJVMQKR1KZQP6VG7"
+  }, {
+    "text" : "A mí, si me permitís incorporarme a esa reunión, comentamos una cosilla sobre las fechas utc y eso que vienen de firefly.",
+    "start_date_time" : "2025-07-08T08:35:43.13Z",
+    "end_date_time" : "2025-07-08T08:35:50.01Z",
+    "speaker" : {
+      "id" : "01JZMNWQ61J9YNAJ9KHAMMF2SX",
+      "name" : "Gerardo Montes Rodríguez"
+    },
+    "index" : 9,
+    "id" : "01JZMNWQ62QJVMQKR1KZQP6VG8"
+  }, {
+    "text" : "Sí, perfecto.",
+    "start_date_time" : "2025-07-08T08:35:50.01Z",
+    "end_date_time" : "2025-07-08T08:35:50.97Z",
+    "speaker" : {
+      "id" : "01JZMNWQ61PHVDYWQ5G2VGAESN",
+      "name" : "Óscar Ferrer Sánchez"
+    },
+    "index" : 10,
+    "id" : "01JZMNWQ62QJVMQKR1KZQP6VG9"
+  }, {
+    "text" : "Porque estoy viendo que las fechas que vienen de firefly vienen en UTC, pero claro, cuando yo las veo en la transcripción, pues no sé si son las 8 y 35 de la mañana UTC o las 8 y 35 de la mañana de Madrid.",
+    "start_date_time" : "2025-07-08T08:35:50.97Z",
+    "end_date_time" : "2025-07-08T08:36:02.49Z",
+    "speaker" : {
+      "id" : "01JZMNWQ61J9YNAJ9KHAMMF2SX",
+      "name" : "Gerardo Montes Rodríguez"
+    },
+    "index" : 11,
+    "id" : "01JZMNWQ62QJVMQKR1KZQP6VGA"
+  }, {
+    "text" : "Claro, exacto.",
+    "start_date_time" : "2025-07-08T08:36:02.49Z",
+    "end_date_time" : "2025-07-08T08:36:03.45Z",
+    "speaker" : {
+      "id" : "01JZMNWQ61PHVDYWQ5G2VGAESN",
+      "name" : "Óscar Ferrer Sánchez"
+    },
+    "index" : 12,
+    "id" : "01JZMNWQ62QJVMQKR1KZQP6VGB"
+  }, {
+    "text" : "Entonces, claro, si son las 8 y 35 UTC, pues aquí en Madrid serían las 10 y 35.",
+    "start_date_time" : "2025-07-08T08:36:03.45Z",
+    "end_date_time" : "2025-07-08T08:36:08.41Z",
+    "speaker" : {
+      "id" : "01JZMNWQ61J9YNAJ9KHAMMF2SX",
+      "name" : "Gerardo Montes Rodríguez"
+    },
+    "index" : 13,
+    "id" : "01JZMNWQ62QJVMQKR1KZQP6VGC"
+  }, {
+    "text" : "Exacto, exacto.",
+    "start_date_time" : "2025-07-08T08:36:08.41Z",
+    "end_date_time" : "2025-07-08T08:36:09.37Z",
+    "speaker" : {
+      "id" : "01JZMNWQ61PHVDYWQ5G2VGAESN",
+      "name" : "Óscar Ferrer Sánchez"
+    },
+    "index" : 14,
+    "id" : "01JZMNWQ62QJVMQKR1KZQP6VGD"
+  }, {
+    "text" : "Pero claro, cuando yo veo la transcripción, no sé si esas 8 y 35 son UTC o son de Madrid.",
+    "start_date_time" : "2025-07-08T08:36:09.37Z",
+    "end_date_time" : "2025-07-08T08:36:13.85Z",
+    "speaker" : {
+      "id" : "01JZMNWQ61J9YNAJ9KHAMMF2SX",
+      "name" : "Gerardo Montes Rodríguez"
+    },
+    "index" : 15,
+    "id" : "01JZMNWQ62QJVMQKR1KZQP6VGE"
+  }, {
+    "text" : "Claro, claro, claro.",
+    "start_date_time" : "2025-07-08T08:36:13.85Z",
+    "end_date_time" : "2025-07-08T08:36:15.29Z",
+    "speaker" : {
+      "id" : "01JZMNWQ61PHVDYWQ5G2VGAESN",
+      "name" : "Óscar Ferrer Sánchez"
+    },
+    "index" : 16,
+    "id" : "01JZMNWQ62QJVMQKR1KZQP6VGF"
+  }, {
+    "text" : "Entonces, no sé si habría que hacer alguna conversión o algo.",
+    "start_date_time" : "2025-07-08T08:36:15.29Z",
+    "end_date_time" : "2025-07-08T08:36:18.25Z",
+    "speaker" : {
+      "id" : "01JZMNWQ61J9YNAJ9KHAMMF2SX",
+      "name" : "Gerardo Montes Rodríguez"
+    },
+    "index" : 17,
+    "id" : "01JZMNWQ62QJVMQKR1KZQP6VGG"
+  }, {
+    "text" : "Sí, sí, sí, porque claro, ahora mismo estamos a las 10 y 36, no a las 8 y 36.",
+    "start_date_time" : "2025-07-08T08:36:18.25Z",
+    "end_date_time" : "2025-07-08T08:36:22.73Z",
+    "speaker" : {
+      "id" : "01JZMNWQ61PHVDYWQ5G2VGAESN",
+      "name" : "Óscar Ferrer Sánchez"
+    },
+    "index" : 18,
+    "id" : "01JZMNWQ62QJVMQKR1KZQP6VGH"
+  }, {
+    "text" : "Exacto.",
+    "start_date_time" : "2025-07-08T08:36:22.73Z",
+    "end_date_time" : "2025-07-08T08:36:23.21Z",
+    "speaker" : {
+      "id" : "01JZMNWQ61J9YNAJ9KHAMMF2SX",
+      "name" : "Gerardo Montes Rodríguez"
+    },
+    "index" : 19,
+    "id" : "01JZMNWQ62QJVMQKR1KZQP6VGI"
+  }, {
+    "text" : "Entonces, claro, si yo veo 8 y 36 en la transcripción, pues me parece raro.",
+    "start_date_time" : "2025-07-08T08:36:23.21Z",
+    "end_date_time" : "2025-07-08T08:36:26.65Z",
+    "speaker" : {
+      "id" : "01JZMNWQ61J9YNAJ9KHAMMF2SX",
+      "name" : "Gerardo Montes Rodríguez"
+    },
+    "index" : 20,
+    "id" : "01JZMNWQ62QJVMQKR1KZQP6VGJ"
+  }, {
+    "text" : "Claro, exacto, exacto.",
+    "start_date_time" : "2025-07-08T08:36:26.65Z",
+    "end_date_time" : "2025-07-08T08:36:28.09Z",
+    "speaker" : {
+      "id" : "01JZMNWQ61PHVDYWQ5G2VGAESN",
+      "name" : "Óscar Ferrer Sánchez"
+    },
+    "index" : 21,
+    "id" : "01JZMNWQ62QJVMQKR1KZQP6VGK"
+  }, {
+    "text" : "Porque yo sé que ahora son las 10 y 36.",
+    "start_date_time" : "2025-07-08T08:36:28.09Z",
+    "end_date_time" : "2025-07-08T08:36:30.01Z",
+    "speaker" : {
+      "id" : "01JZMNWQ61J9YNAJ9KHAMMF2SX",
+      "name" : "Gerardo Montes Rodríguez"
+    },
+    "index" : 22,
+    "id" : "01JZMNWQ62QJVMQKR1KZQP6VGL"
+  }, {
+    "text" : "Exacto, exacto.",
+    "start_date_time" : "2025-07-08T08:36:30.01Z",
+    "end_date_time" : "2025-07-08T08:36:31.45Z",
+    "speaker" : {
+      "id" : "01JZMNWQ61PHVDYWQ5G2VGAESN",
+      "name" : "Óscar Ferrer Sánchez"
+    },
+    "index" : 23,
+    "id" : "01JZMNWQ62QJVMQKR1KZQP6VGM"
+  }, {
+    "text" : "Entonces, no sé si habría que hacer alguna conversión o algo, o si es que estoy yo confundido.",
+    "start_date_time" : "2025-07-08T08:36:31.45Z",
+    "end_date_time" : "2025-07-08T08:36:35.97Z",
+    "speaker" : {
+      "id" : "01JZMNWQ61J9YNAJ9KHAMMF2SX",
+      "name" : "Gerardo Montes Rodríguez"
+    },
+    "index" : 24,
+    "id" : "01JZMNWQ62QJVMQKR1KZQP6VGN"
+  }, {
+    "text" : "¿Sumarle 2 h para que sea la hora real, a eso hay que sumarle.",
+    "start_date_time" : "2025-07-08T08:36:35.97Z",
+    "end_date_time" : "2025-07-08T08:36:39.05Z",
+    "speaker" : {
+      "id" : "01JZMNWQ61PHVDYWQ5G2VGAESN",
+      "name" : "Óscar Ferrer Sánchez"
+    },
+    "index" : 25,
+    "id" : "01JZMNWQ62QJVMQKR1KZQP6VGO"
+  }
+  ]
+}
